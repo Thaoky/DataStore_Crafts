@@ -1,17 +1,20 @@
-## Interface: 100200
+## Interface: 100206
 ## Title: DataStore_Crafts
 ## IconTexture: Interface\Icons\garrison_building_storehouse
 
 ## Notes: Stores information about professions & crafts
 ## Author: Thaoky (EU-Marécages de Zangar)
-## Version: 2023.11.26
+## Version: 2024.01.05
 ## Dependencies: DataStore
-## OptionalDeps: Ace3
-## SavedVariables: DataStore_CraftsDB, DataStore_CraftsRefDB
+## SavedVariables: DataStore_Crafts_Characters, DataStore_Crafts_ArcheologyItems, DataStore_Crafts_RecipeCategories
 ## X-Category: Interface Enhancements
 
-locale.xml
+Locale.xml
 
-DataStore_Crafts.lua
+#DataStore_Crafts.lua
+DataStore_Crafts_Retail.lua
+API\Common.lua
 Data\Archeology.lua
-Options.xml
+API\Archeology.lua
+API\ProfessionSpellIDs.lua
+

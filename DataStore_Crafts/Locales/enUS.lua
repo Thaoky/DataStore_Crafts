@@ -1,4 +1,5 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("DataStore_Crafts", "enUS", true)
+local addonName = ...
+local L = DataStore:SetDefaultLocale(addonName, "enUS")
 
 L["Broadcast my profession links to guild at logon"] = true
 L["BROADCAST_PROFS_DISABLED"] = "Nothing will be sent at all. Disabling this option considerably decreases network traffic on the guild channel."

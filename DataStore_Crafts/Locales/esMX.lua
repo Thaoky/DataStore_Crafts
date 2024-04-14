@@ -1,5 +1,5 @@
-local L = LibStub("AceLocale-3.0"):NewLocale( "DataStore_Crafts", "esMX" )
-
+local addonName = ...
+local L = DataStore:SetLocale(addonName, "esMX")
 if not L then return end
 
 L["Professions"] = "Profesiones"

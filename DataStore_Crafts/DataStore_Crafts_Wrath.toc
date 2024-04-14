@@ -13,4 +13,5 @@
 locale.xml
 
 DataStore_Crafts.lua
+API\ProfessionSpellIDs.lua
 Options.xml

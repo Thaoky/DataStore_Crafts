@@ -1,5 +1,5 @@
-local L = LibStub("AceLocale-3.0"):NewLocale( "DataStore_Crafts", "frFR" )
-
+local addonName = ...
+local L = DataStore:SetLocale(addonName, "frFR")
 if not L then return end
 
 L["Broadcast my profession links to guild at logon"] = "Envoyer mes liens de métier à la guilde durant le login"

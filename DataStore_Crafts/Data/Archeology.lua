@@ -1,5 +1,4 @@
-local addonName = "DataStore_Crafts"
-local addon = _G[addonName]
+local addonName, addon = ...
 
 addon.artifactDB = {}
 
@@ -33,9 +32,10 @@ local RACE_DRAENEI = 19
 local RACE_DWARF = 20
 
 local currentRace = 0
+local TableInsert = table.insert
 
 local function AddArtifact(itemID, spellID, rarity, fragments)
-	table.insert(addon.artifactDB[currentRace], { itemID = itemID, spellID = spellID, rarity = rarity, fragments = fragments })
+	TableInsert(addon.artifactDB[currentRace], { itemID = itemID, spellID = spellID, rarity = rarity, fragments = fragments })
 end
 
 -- Data taken from Professor, code adjusted for my needs (rarity levels too)
