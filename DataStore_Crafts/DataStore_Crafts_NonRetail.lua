@@ -21,7 +21,7 @@ local GetTradeSkillNumReagents, GetTradeSkillReagentInfo, GetTradeSkillReagentIt
 local GetCraftDisplaySkillLine, GetCraftInfo, GetCraftNumReagents, GetCraftReagentInfo, GetCraftReagentItemLink = GetCraftDisplaySkillLine, GetCraftInfo, GetCraftNumReagents, GetCraftReagentInfo, GetCraftReagentItemLink
 local C_TradeSkillUI, C_Timer = C_TradeSkillUI, C_Timer
 
-local isWotLK = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
+local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
 
 
 local AddonDB_Defaults = {
@@ -301,7 +301,7 @@ local function ScanRecipes()
 	local char = thisCharacter
 	local profession = char.Professions[tradeskillName]
 	
-	if isWotLK then
+	if isCata then
 		-- Get profession link
 		local profLink = GetTradeSkillListLink()
 		if profLink then	-- sometimes a nil value may be returned, so keep the old one if nil
@@ -343,7 +343,7 @@ local function ScanRecipes()
 		
 		-- Get recipeID
 		
-		if isWotLK then
+		if isCata then
 			recipeLink = GetTradeSkillRecipeLink(i) -- add recipe link here to get recipeID
 			if recipeLink then
 				local found, _, enchantString = string.find(recipeLink, "^|%x+|H(.+)|h%[.+%]")
@@ -359,7 +359,7 @@ local function ScanRecipes()
 		if link then
 			itemID = tonumber(link:match("item:(%d+)"))
 			
-			if isWotLK then
+			if isCata then
 				if itemID and recipeID then
 					local maxMade = 1
 					resultItemsDB[recipeID] = maxMade + bit64:LeftShift(itemID, 8) 	-- bits 0-7 = maxMade, bits 8+ = item id
@@ -389,7 +389,7 @@ local function ScanRecipes()
 				end
 
 				-- if there is a valid recipeID, save it
-				if isWotLK then
+				if isCata then
 					craftInfo = (recipeLink and recipeID) and recipeID or ""
 				else
 					craftInfo = (link and itemID) and itemID or ""
@@ -705,7 +705,7 @@ DataStore:OnPlayerLogin(function()
 	addon:ListenTo("CHAT_MSG_SKILL", OnChatMsgSkill)
 	addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
 	addon:ListenTo("TRADE_SKILL_DATA_SOURCE_CHANGED", function()
-		if isWotLK 
+		if isCata 
 			or	C_TradeSkillUI.IsTradeSkillLinked() 
 			or C_TradeSkillUI.IsTradeSkillGuild() 
 			or C_TradeSkillUI.IsNPCCrafting()
@@ -714,7 +714,7 @@ DataStore:OnPlayerLogin(function()
 		ScanTradeSkills()
 	end)
 	
-	if not isWotLK then 
+	if not isCata then 
 		addon:ListenTo("CRAFT_UPDATE", function()     
 			addon:ListenTo("CRAFT_CLOSE", OnCraftClose)
 			ScanProfessionLinks()
