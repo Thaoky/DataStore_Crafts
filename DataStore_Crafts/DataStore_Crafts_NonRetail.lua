@@ -6,7 +6,7 @@ if not DataStore then return end
 
 local addonName, addon = ...
 local thisCharacter
-local reagentsDB, resultItemsDB, recipeCategoriesDB
+-- local reagentsDB, resultItemsDB, recipeCategoriesDB
 
 local L = DataStore:GetLocale("DataStore_Crafts")
 
@@ -226,6 +226,7 @@ local function ScanProfessionLinks()
 				end
 				
 				if field then
+					print("prof name : " .. profName)
 					local profession = char.Professions[profName]
 				
 					profession[field] = true
@@ -245,6 +246,8 @@ local function ScanProfessionLinks()
 	
 	char.lastUpdate = time()
 end
+
+
 
 local SkillTypeToColor = {
 	["header"] = 0,
@@ -676,11 +679,11 @@ DataStore:OnAddonLoaded(addonName, function()
 	DataStore:RegisterModule({
 		addon = addon,
 		addonName = addonName,
-		rawTables = {
-			"DataStore_Crafts_Reagents",				-- [recipeID] = "itemID1,count1 | itemID2,count2 | ..."
-			"DataStore_Crafts_ResultItems",			-- [recipeID] = (bits 0-7 = maxMade, bits 8+ = item id)
-			"DataStore_Crafts_RecipeCategories",	-- [categoryID] = name
-		},
+		-- rawTables = {
+			-- "DataStore_Crafts_Reagents",				-- [recipeID] = "itemID1,count1 | itemID2,count2 | ..."
+			-- "DataStore_Crafts_ResultItems",			-- [recipeID] = (bits 0-7 = maxMade, bits 8+ = item id)
+			-- "DataStore_Crafts_RecipeCategories",	-- [categoryID] = name
+		-- },
 		characterTables = {
 			["DataStore_Crafts_Characters"] = {},
 		}
@@ -694,9 +697,9 @@ DataStore:OnAddonLoaded(addonName, function()
 
 	thisCharacter = DataStore:GetCharacterDB("DataStore_Crafts_Characters", true)
 	thisCharacter.Professions = thisCharacter.Professions or {}
-	reagentsDB = DataStore_Crafts_Reagents
-	resultItemsDB = DataStore_Crafts_ResultItems
-	recipeCategoriesDB = DataStore_Crafts_RecipeCategories
+	-- reagentsDB = DataStore_Crafts_Reagents
+	-- resultItemsDB = DataStore_Crafts_ResultItems
+	-- recipeCategoriesDB = DataStore_Crafts_RecipeCategories
 end)
 
 DataStore:OnPlayerLogin(function()

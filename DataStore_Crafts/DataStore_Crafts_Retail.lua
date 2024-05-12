@@ -6,11 +6,13 @@ if not DataStore then return end
 
 local addonName, addon = ...
 local thisCharacter
-local reagentsDB, recipeCategoriesDB
+local reagentsDB, resultItemsDB, recipeCategoriesDB
 
 local DataStore, TableConcat, TableInsert, format, gsub, type = DataStore, table.concat, table.insert, format, gsub, type
 local GetProfessions, GetProfessionInfo, GetSpellInfo = GetProfessions, GetProfessionInfo, GetSpellInfo
 local C_TradeSkillUI = C_TradeSkillUI
+
+local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 -- *** Utility functions ***
 local bit64 = LibStub("LibBit64")
@@ -59,6 +61,129 @@ local function SetProfessionRank(index, rank, maxRank)
 end
 
 -- *** Scanning functions ***
+local selectedTradeSkillIndex
+local subClasses, subClassID
+local invSlots, invSlotID
+
+local function GetSubClassID()
+	-- The purpose of this function is to get the subClassID in a UI independant way
+	-- ie: without relying on UIDropDownMenu_GetSelectedID(TradeSkillSubClassDropDown), which uses a hardcoded frame name.
+	
+	if GetTradeSkillSubClassFilter(0) then		-- if "All Subclasses" is selected, GetTradeSkillSubClassFilter() will return 1 for all indexes, including 0
+		return 1				-- thus return 1 as selected id	(as would be returned by UIDropDownMenu_GetSelectedID(TradeSkillSubClassDropDown))
+	end
+
+	local isEnabled
+	for i = 1, #subClasses do
+	   isEnabled = GetTradeSkillSubClassFilter(i)
+	   if isEnabled then
+	      return i+1			-- ex: 3rd element of the subClasses array, but 4th in the dropdown due to "All Subclasses", so return i+1
+	   end
+	end
+end
+
+local function GetInvSlotID()
+	-- The purpose of this function is to get the invSlotID in a UI independant way	(same as GetSubClassID)
+	-- ie: without relying on UIDropDownMenu_GetSelectedID(TradeSkillInvSlotDropDown), which uses a hardcoded frame name.
+
+	if GetTradeSkillInvSlotFilter(0) then		-- if "All Slots" is selected, GetTradeSkillInvSlotFilter() will return 1 for all indexes, including 0
+		return 1				-- thus return 1 as selected id	(as would be returned by  UIDropDownMenu_GetSelectedID(TradeSkillInvSlotDropDown))
+	end
+
+	local filter
+	for i = 1, #invSlots do
+	   filter = GetTradeSkillInvSlotFilter(i)
+	   if filter then
+	      return i+1			-- ex: 3rd element of the invSlots array, but 4th in the dropdown due to "All Slots", so return i+1
+	   end
+	end
+end
+
+local function SaveActiveFilters()
+	selectedTradeSkillIndex = GetTradeSkillSelectionIndex()
+	
+	subClasses = { GetTradeSkillSubClasses() }
+	invSlots = { GetTradeSkillInvSlots() }
+	subClassID = GetSubClassID()
+	invSlotID = GetInvSlotID()
+	
+	-- Subclasses
+	SetTradeSkillSubClassFilter(0, 1, 1)	-- this checks "All subclasses"
+	if TradeSkillSubClassDropDown then
+		UIDropDownMenu_SetSelectedID(TradeSkillSubClassDropDown, 1)
+	end
+	
+	-- Inventory slots
+	SetTradeSkillInvSlotFilter(0, 1, 1)		-- this checks "All slots"
+	if TradeSkillInvSlotDropDown then
+		UIDropDownMenu_SetSelectedID(TradeSkillInvSlotDropDown, 1)
+	end
+end
+
+local function RestoreActiveFilters()
+	-- Subclasses
+	SetTradeSkillSubClassFilter(subClassID-1, 1, 1)	-- this checks the previously checked value
+	
+	local frame = TradeSkillSubClassDropDown
+	if frame then	-- other addons might nil this frame (delayed load, etc..), so secure DDM calls
+		local text = (subClassID == 1) and ALL_SUBCLASSES or subClasses[subClassID-1]
+		UIDropDownMenu_SetSelectedID(frame, subClassID)
+		UIDropDownMenu_SetText(frame, text);
+	end
+	
+	subClassID = nil
+	wipe(subClasses)
+	subClasses = nil
+	
+	-- Inventory slots
+	invSlotID = invSlotID or 1
+	SetTradeSkillInvSlotFilter(invSlotID-1, 1, 1)	-- this checks the previously checked value
+	
+	frame = TradeSkillInvSlotDropDown
+	if frame then
+		local text = (invSlotID == 1) and ALL_INVENTORY_SLOTS or invSlots[invSlotID-1]
+		UIDropDownMenu_SetSelectedID(frame, invSlotID)
+		UIDropDownMenu_SetText(frame, text);
+	end
+	
+	invSlotID = nil
+	wipe(invSlots)
+	invSlots = nil
+
+	SelectTradeSkill(selectedTradeSkillIndex)
+	selectedTradeSkillIndex = nil
+end
+
+local headersState = {}
+
+local function SaveHeaders()
+	local headerCount = 0		-- use a counter to avoid being bound to header names, which might not be unique.
+	
+	for i = GetNumTradeSkills(), 1, -1 do		-- 1st pass, expand all categories
+		local _, skillType, _, isExpanded  = GetTradeSkillInfo(i)
+		 if (skillType == "header") then
+			headerCount = headerCount + 1
+			if not isExpanded then
+				ExpandTradeSkillSubClass(i)
+				headersState[headerCount] = true
+			end
+		end
+	end
+end
+
+local function RestoreHeaders()
+	local headerCount = 0
+	for i = GetNumTradeSkills(), 1, -1 do
+		local _, skillType  = GetTradeSkillInfo(i)
+		if (skillType == "header") then
+			headerCount = headerCount + 1
+			if headersState[headerCount] then
+				CollapseTradeSkillSubClass(i)
+			end
+		end
+	end
+	wipe(headersState)
+end
 
 local function ScanProfessionInfo(index, mainIndex)
 	-- index may be nil if the profession has not been learned at all
@@ -70,7 +195,9 @@ local function ScanProfessionInfo(index, mainIndex)
 	if mainIndex == 5 then
 		-- just save the rank for archeology
 		SetProfessionRank(mainIndex, rank, maxRank)
-	-- else
+	elseif not isRetail then
+		-- save all of them for non-retail
+		SetProfessionRank(mainIndex, rank, maxRank)
 	end
 	
 	SetProfessionIndex(name, mainIndex)
@@ -86,17 +213,51 @@ local function ScanProfessionInfo(index, mainIndex)
 end
 
 local function ScanProfessionLinks()
-	local prof1, prof2, arch, fish, cook = GetProfessions()
+	-- firstAid is nil on retail, but valid in cata
+	local prof1, prof2, arch, fish, cook, firstAid = GetProfessions()
 
 	ScanProfessionInfo(prof1, 1)
 	ScanProfessionInfo(prof2, 2)
 	ScanProfessionInfo(cook, 3)
 	ScanProfessionInfo(fish, 4)
-	ScanProfessionInfo(arch, 5)
+	if isRetail then
+		ScanProfessionInfo(arch, 5)
+	else
+		ScanProfessionInfo(firstAid, 5)
+	end
 	
 	thisCharacter.lastUpdate = time()
 	
 	DataStore:Broadcast("DATASTORE_PROFESSION_LINKS_UPDATED")
+end
+
+local SkillTypeToColor = {
+	["header"] = 0,
+	["optimal"] = 1,		-- orange
+	["medium"] = 2,		-- yellow
+	["easy"] = 3,			-- green
+	["trivial"] = 4,		-- grey
+}
+
+local function ScanCooldowns()
+	local tradeskillName = GetTradeSkillLine()
+	local char = addon.ThisCharacter
+	local profession = char.Professions[tradeskillName]
+	
+	wipe(profession.Cooldowns)
+	for i = 1, GetNumTradeSkills() do
+		local skillName, skillType = GetTradeSkillInfo(i)
+		
+		if skillType ~= "header" then
+			local cooldown = GetTradeSkillCooldown(i)
+			if cooldown then
+				-- ex: "Hexweave Cloth|86220|1533539676" expire at "now + cooldown"
+				TableInsert(profession.Cooldowns, format("%s|%d|%d", skillName, cooldown, cooldown + time()))
+				
+				addon:SendMessage("DATASTORE_PROFESSION_COOLDOWN_UPDATED")
+			end
+		end
+	end
 end
 
 local function ScanRecipeCategories(profession, professionIndex)
@@ -138,7 +299,7 @@ local function ScanRecipeCategories(profession, professionIndex)
 	SetProfessionRank(professionIndex, cumulatedRank, cumulatedMaxRank)
 end
 
-local function ScanRecipes()
+local function ScanRecipes_Retail()
 	
 	local info = C_TradeSkillUI.GetBaseProfessionInfo()
 	local tradeskillName = info.professionName
@@ -200,17 +361,160 @@ local function ScanRecipes()
 	DataStore:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
 end
 
+local function ScanRecipes_NonRetail()
+	local tradeskillName = GetTradeSkillLine()
+	
+	-- special treatment for frFR, change "Secourisme" into "Premiers soins"
+	if tradeskillName == "Secourisme" then
+		tradeskillName = GetSpellInfo(SPELL_ID_FIRSTAID)
+	end
+	
+	-- number of known entries in the current skill list including headers and categories
+	local numTradeSkills = GetNumTradeSkills()
+	local skillName, skillType, _, _, altVerb = GetTradeSkillInfo(1)	-- test the first line
+	
+	-- This method seems to be stable to not miss skills, or to make incomplete scans. At least in Classic.
+	if not tradeskillName or not numTradeSkills
+		or	tradeskillName == "UNKNOWN"
+		or	numTradeSkills == 0
+		or (skillType ~= "header" and skillType ~= "subheader") then
+		
+		-- if for any reason the frame is not ready, call it again in 1 second
+		-- C_Timer.After(0.5, ScanRecipes)
+		return
+	end
+
+	local char = thisCharacter
+	-- local profession = char.Professions[tradeskillName]
+	
+	local professionIndex = char.Indices[tradeskillName]
+	local profession = char.Professions[professionIndex]
+	
+	
+	if isCata then
+		-- Get profession link
+		local profLink = GetTradeSkillListLink()
+		if profLink then	-- sometimes a nil value may be returned, so keep the old one if nil
+			--addon:Print(format(("%s"), profLink)) -- debug
+			profession.FullLink = profLink
+		end
+	end
+
+	-- clear storage
+	profession.Categories = profession.Categories or {}
+	wipe(profession.Categories)
+	
+	profession.Crafts = profession.Crafts or {}
+	local crafts = profession.Crafts
+	wipe(crafts)
+		
+	local reagentsInfo = {}
+	
+	profession.Cooldowns = profession.Cooldowns or {}
+	wipe(profession.Cooldowns)
+	local link, recipeLink, itemID, recipeID
+	
+	for i = 1, numTradeSkills do
+		skillName, skillType, _, _, altVerb = GetTradeSkillInfo(i)
+		--print(format("skillName: %s, skillType: %s, altVerb : %s", skillName or "nil", skillType or "nil", altVerb or "nil")) --debug
+		-- scan reagents for current skill
+		wipe(reagentsInfo)
+		local numReagents =  GetTradeSkillNumReagents(i)
+
+		for reagentIndex = 1, numReagents do
+			local _, _, count = GetTradeSkillReagentInfo(i, reagentIndex)
+			link = GetTradeSkillReagentItemLink(i, reagentIndex)
+			
+			if link and count then
+				itemID = tonumber(link:match("item:(%d+)"))
+				if itemID then
+					TableInsert(reagentsInfo, format("%s,%s", itemID, count))
+				end
+			end
+		end
+		
+		-- Get recipeID
+		
+		if isCata then
+			recipeLink = GetTradeSkillRecipeLink(i) -- add recipe link here to get recipeID
+			if recipeLink then
+				local found, _, enchantString = string.find(recipeLink, "^|%x+|H(.+)|h%[.+%]")
+				recipeID = tonumber(enchantString:match("enchant:(%d+)"))
+				if recipeID then
+					reagentsDB[recipeID] = TableConcat(reagentsInfo, "|")
+				end
+			end
+		end
+
+		-- Resulting itemID if there is one
+		link = GetTradeSkillItemLink(i)
+		if link then
+			itemID = tonumber(link:match("item:(%d+)"))
+			
+			if isCata then
+				if itemID and recipeID then
+					local maxMade = 1
+					resultItemsDB[recipeID] = maxMade + bit64:LeftShift(itemID, 8) 	-- bits 0-7 = maxMade, bits 8+ = item id
+				end
+			else
+				if itemID then
+					reagentsDB[itemID] = TableConcat(reagentsInfo, "|")
+				end
+			end
+			
+		end
+		
+		-- Scan recipe
+		local color = SkillTypeToColor[skillType]
+		local craftInfo
+		
+		if color then
+			if skillType == "header" then
+				craftInfo = skillName or ""
+				TableInsert(profession.Categories, skillName)
+			else
+				-- cooldowns, if any
+				local cooldown = GetTradeSkillCooldown(i)
+				if cooldown then
+				-- ex: "Hexweave Cloth|86220|1533539676" expire at "now + cooldown"
+					TableInsert(profession.Cooldowns, format("%s|%d|%d", skillName, cooldown, cooldown + time()))
+				end
+
+				-- if there is a valid recipeID, save it
+				if isCata then
+					craftInfo = (recipeLink and recipeID) and recipeID or ""
+				else
+					craftInfo = (link and itemID) and itemID or ""
+				end
+			end
+			crafts[i] = format("%s|%s", color, craftInfo)
+		end
+	end
+	
+	DataStore:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
+end
+
 local function ScanTradeSkills()
-	ScanRecipes()
+	if isRetail then
+		ScanRecipes_Retail()
+	else
+		SaveActiveFilters()
+		SaveHeaders()
+		ScanRecipes_NonRetail()
+		RestoreHeaders()
+		RestoreActiveFilters()
+	end
+	
 	thisCharacter.lastUpdate = time()
 end
 
 
 -- *** Event Handlers ***
+local isTradeSkillWindowOpen
 
 local function OnTradeSkillClose()
 	addon:StopListeningTo("TRADE_SKILL_CLOSE")
-	addon.isOpen = nil
+	isTradeSkillWindowOpen = nil
 end
 
 local currentCraftRecipeID
@@ -220,21 +524,43 @@ local function OnTradeSkillListUpdate(self)
 	
 	local cooldown = C_TradeSkillUI.GetRecipeCooldown(currentCraftRecipeID)
 	if cooldown then
-		ScanRecipes()
+		ScanRecipes_Retail()
 		DataStore:Broadcast("DATASTORE_PROFESSION_COOLDOWN_UPDATED")
 		currentCraftRecipeID = nil
 	end
 end
 
+local updateCooldowns
+
+local function OnTradeSkillUpdate()
+	-- The hook in DoTradeSkill will set this flag so that we only update skills once.
+	if updateCooldowns then
+		ScanCooldowns()	-- only cooldowns need to be refreshed
+		updateCooldowns = nil
+	end	
+end
+
 local function OnTradeSkillShow()
-	if C_TradeSkillUI.IsTradeSkillLinked() or C_TradeSkillUI.IsTradeSkillGuild() or C_TradeSkillUI.IsNPCCrafting() then return end
-	
-	hooksecurefunc(C_TradeSkillUI, "CraftRecipe", function(recipeID)
-		currentCraftRecipeID = recipeID
-	end)
+	-- Retail only
+	if isRetail then
+		if C_TradeSkillUI.IsTradeSkillLinked() or C_TradeSkillUI.IsTradeSkillGuild() or C_TradeSkillUI.IsNPCCrafting() then return end
+		
+		hooksecurefunc(C_TradeSkillUI, "CraftRecipe", function(recipeID)
+			currentCraftRecipeID = recipeID
+		end)
+	end
 	
 	addon:ListenTo("TRADE_SKILL_CLOSE", OnTradeSkillClose)
-	addon.isOpen = true
+	isTradeSkillWindowOpen = true
+	
+	-- Non-retail only
+	if not isRetail then
+		addon:ListenTo("TRADE_SKILL_UPDATE", OnTradeSkillUpdate)
+		ScanProfessionLinks()
+
+		-- Scan 0.5 seconds after the SHOW event
+		C_Timer.After(0.5, ScanTradeSkills)
+	end
 end
 
 -- this turns
@@ -404,6 +730,8 @@ DataStore:OnAddonLoaded(addonName, function()
 		addon = addon,
 		addonName = addonName,
 		rawTables = {
+			"DataStore_Crafts_Reagents",				-- [recipeID] = "itemID1,count1 | itemID2,count2 | ..."
+			"DataStore_Crafts_ResultItems",			-- [recipeID] = (bits 0-7 = maxMade, bits 8+ = item id)
 			"DataStore_Crafts_RecipeCategories",	-- [categoryID] = name
 		},
 		characterTables = {
@@ -419,13 +747,26 @@ DataStore:OnAddonLoaded(addonName, function()
 	DataStore:RegisterMethod(addon, "GetNumRecipesByColor", _GetNumRecipesByColor)
 	DataStore:RegisterMethod(addon, "GetRecipeCategoryInfo", _GetRecipeCategoryInfo)
 	DataStore:RegisterMethod(addon, "GetRecipeSubCategoryInfo", _GetRecipeSubCategoryInfo)
-	
+	DataStore:RegisterMethod(addon, "IsTradeSkillWindowOpen", function() return isTradeSkillWindowOpen end)
 
 	thisCharacter = DataStore:GetCharacterDB("DataStore_Crafts_Characters", true)
 	thisCharacter.Ranks = thisCharacter.Ranks or {}
 	thisCharacter.Indices = thisCharacter.Indices or {}
 	thisCharacter.Professions = thisCharacter.Professions or {}
 	recipeCategoriesDB = DataStore_Crafts_RecipeCategories
+	
+	if not isRetail then
+		DataStore:RegisterTables({
+			addon = addon,
+			rawTables = {
+				"DataStore_Crafts_Reagents",				-- [recipeID] = "itemID1,count1 | itemID2,count2 | ..."
+				"DataStore_Crafts_ResultItems",			-- [recipeID] = (bits 0-7 = maxMade, bits 8+ = item id)
+			},
+		})
+	
+		reagentsDB = DataStore_Crafts_Reagents
+		resultItemsDB = DataStore_Crafts_ResultItems
+	end
 end)
 
 DataStore:OnPlayerLogin(function()
@@ -436,8 +777,3 @@ DataStore:OnPlayerLogin(function()
 	addon:ListenTo("TRADE_SKILL_DATA_SOURCE_CHANGED", ScanTradeSkills)
 	addon:ListenTo("TRADE_SKILL_LIST_UPDATE", OnTradeSkillListUpdate)
 end)
-
-function addon:IsTradeSkillWindowOpen()
-	-- note : maybe there's a function in the WoW API to test this, but I did not find it :(
-	return addon.isOpen
-end
