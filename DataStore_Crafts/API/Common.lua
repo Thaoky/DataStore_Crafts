@@ -11,8 +11,8 @@ local professionIndices = {
 	Profession2 = 2,
 	Cooking = 3,
 	Fishing = 4,
-	FirstAid = 5,		-- 5 only in non-retail
-	Archeology = 5		-- 5 only in retail
+	Archeology = 5,	-- retail & cata
+	FirstAid = 6,		-- cata
 }
 
 local function _GetProfessionRankByIndex(character, professionIndex)
