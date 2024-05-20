@@ -612,10 +612,11 @@ local function OnChatMsgSystem(self, message)
 
 	-- Check it is a proper profession
 	local skillName = skillLink:match("%[(.+)%]")
-	if skillName then
+	local char = thisCharacter
+	
+	if skillName and char.Professions[skillName] then
 		
 		-- Clear the list of recipes
-		local char = thisCharacter
 		wipe(char.Professions[skillName])
 		char.Professions[skillName] = nil
 	end
