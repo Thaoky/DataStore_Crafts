@@ -300,7 +300,6 @@ local function ScanRecipeCategories(profession, professionIndex)
 end
 
 local function ScanRecipes_Retail()
-	
 	local info = C_TradeSkillUI.GetBaseProfessionInfo()
 	local tradeskillName = info.professionName
 
@@ -308,7 +307,7 @@ local function ScanRecipes_Retail()
 	-- info.professionID = 960 and info.maxSkillLevel = 1
 
 	-- may happen after a patch, or under extreme lag, so do not save anything to the db !
-	if not tradeskillName or tradeskillName == "UNKNOWN" or info.professionID == 960 then return end	
+	if not tradeskillName or tradeskillName == "UNKNOWN" or info.professionID == 960 or C_TradeSkillUI.IsNPCCrafting() then return end	
 
 	local char = thisCharacter
 	local professionIndex = char.Indices[tradeskillName]
