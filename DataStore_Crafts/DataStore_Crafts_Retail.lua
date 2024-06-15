@@ -314,7 +314,9 @@ local function ScanRecipes_Retail()
 	local profession = char.Professions[professionIndex]
 	
 	ScanRecipeCategories(profession, professionIndex)
-	wipe(profession.Cooldowns)
+	if profession.Cooldowns then
+		wipe(profession.Cooldowns)
+	end
 	
 	-- Get profession link
 	local profLink = C_TradeSkillUI.GetTradeSkillListLink()
