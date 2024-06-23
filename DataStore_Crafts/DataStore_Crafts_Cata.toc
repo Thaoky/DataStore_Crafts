@@ -4,12 +4,12 @@
 
 ## Notes: Stores information about professions & crafts
 ## Author: Thaoky (EU-Marécages de Zangar)
-## Version: 2024.05.20
+## Version: 2024.06.23
 ## Dependencies: DataStore
 ## SavedVariables: DataStore_Crafts_Characters, DataStore_Crafts_Reagents, DataStore_Crafts_ResultItems
 ## X-Category: Interface Enhancements
 
-locale.xml
+Locale.xml
 
 DataStore_Crafts_Retail.lua
 API\Common.lua

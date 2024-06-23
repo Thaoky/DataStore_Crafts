@@ -3,6 +3,7 @@ local addonName, addon = ...
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 local TableRemove, strsplit, type, tonumber, GetSpellInfo = table.remove, strsplit, type, tonumber, GetSpellInfo
+local resultItemsDB, reagentsDB
 
 -- *** Utility functions ***
 local bit64 = LibStub("LibBit64")
@@ -43,6 +44,23 @@ local function _GetCraftCooldownInfo(profession, index)
 	local expiresIn = expiresAt - time()
 	
 	return name, expiresIn, resetsIn, expiresAt
+end
+
+local function _GetCraftResultItem_Retail(recipeID)
+	local schematic = C_TradeSkillUI.GetRecipeSchematic(recipeID, false)
+	return schematic.outputItemID, schematic.quantityMax
+end
+
+local function _GetCraftResultItem_NonRetail(recipeID)
+	local itemData = resultItemsDB[recipeID]
+	if itemData then
+		-- maxMade (bits 0-7), itemID (bits 8+)
+		return bit64:GetBits(itemData, 0, 8), bit64:RightShift(itemData, 8)
+	end
+end
+
+local function _GetCraftReagents(recipeID)
+	return reagentsDB[recipeID]
 end
 
 DataStore:OnAddonLoaded(addonName, function() 
@@ -98,6 +116,11 @@ DataStore:OnAddonLoaded(addonName, function()
 		}
 	})
 	
+	if not isRetail then
+		reagentsDB = DataStore_Crafts_Reagents
+		resultItemsDB = DataStore_Crafts_ResultItems
+	end
+	
 	DataStore:RegisterMethod(addon, "GetProfessionIndices", function() return professionIndices end)
 	DataStore:RegisterMethod(addon, "GetCraftCooldownInfo", _GetCraftCooldownInfo)
 	DataStore:RegisterMethod(addon, "GetNumActiveCooldowns", function(profession)
@@ -120,14 +143,6 @@ DataStore:OnAddonLoaded(addonName, function()
 			profession.Cooldowns = nil
 		end
 	end)
-	DataStore:RegisterMethod(addon, "GetCraftResultItem", function(recipeID)
-		-- local itemData = resultItemsDB[recipeID]
-		-- if itemData then
-			-- maxMade (bits 0-7), itemID (bits 8+)
-			-- return bit64:GetBits(itemData, 0, 8), bit64:RightShift(itemData, 8)
-		-- end
-		
-		local schematic = C_TradeSkillUI.GetRecipeSchematic(recipeID, false)
-		return schematic.outputItemID, schematic.quantityMax
-	end)
+	DataStore:RegisterMethod(addon, "GetCraftResultItem", isRetail and _GetCraftResultItem_Retail or _GetCraftResultItem_NonRetail)
+	DataStore:RegisterMethod(addon, "GetCraftReagents", not isRetail and _GetCraftReagents)
 end)

@@ -13,6 +13,7 @@ local GetProfessions, GetProfessionInfo, GetSpellInfo = GetProfessions, GetProfe
 local C_TradeSkillUI = C_TradeSkillUI
 
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
 
 -- *** Utility functions ***
 local bit64 = LibStub("LibBit64")
@@ -641,6 +642,10 @@ local function _GetNumRecipeCategories(profession)
 end
 
 local function _GetRecipeCategoryInfo(profession, index)
+	if not isRetail then
+		return profession.Categories[index]
+	end
+
 	local info = profession.CategoryInfo[index]
 	
 	local rank = bit64:GetBits(info, 0, 10)
@@ -674,11 +679,54 @@ local function _GetRecipeInfo(recipeData)
 	return color, recipeID, isLearned, recipeRank, totalRanks, minMade, maxMade
 end
 
+local function _GetRecipeInfo_NonRetail(character, profession, index)
+
+	local profIndex = character.Indices[profession]		-- Get the profession index
+	-- local prof = DataStore:GetProfession(character, profession)
+	local prof = character.Professions[profIndex]
+
+	local crafts = prof.Crafts
+	
+	-- id = itemID in vanilla, recipeID in LK
+	local color, id, icon = strsplit("|", crafts[index])
+
+	return tonumber(color), tonumber(id), icon
+end
+
+
 -- Iterate through all recipes, and callback a function for each of them
 local function _IterateRecipes(profession, mainCategory, subCategory, callback)
 	-- mainCategory : category index (or 0 for all)
 	-- subCategory : sub-category index (or 0 for all)
-	local crafts = profession.Crafts
+	
+	if not isRetail then
+		local crafts = profession.Crafts
+		if not crafts then return end			-- can be nil for gathering professions
+		
+		local currentCategory = 0
+		local stop
+		
+		-- loop through recipes
+		for i = 1, #crafts do
+			-- id = itemID in vanilla, recipeID in LK
+			local color, id = strsplit("|", crafts[i])
+
+			color = tonumber(color)
+			if color == 0 then			-- it's a header
+				currentCategory = currentCategory + 1
+				-- no callback for headers
+			else
+				if (mainCategory == 0) or (currentCategory == mainCategory) then
+					id = tonumber(id)	-- it's a spellID, return a number
+					stop = callback(color, id, i)
+				end
+				
+				-- exit if the callback returns true
+				if stop then return end
+			end
+		end
+	end
+	
 	
 	-- loop through categories
 	for catIndex = 1, _GetNumRecipeCategories(profession) do
@@ -742,12 +790,16 @@ DataStore:OnAddonLoaded(addonName, function()
 			"DataStore_Crafts_RecipeCategories",	-- [categoryID] = name
 		},
 		characterTables = {
-			["DataStore_Crafts_Characters"] = {},
+			["DataStore_Crafts_Characters"] = {
+				GetRecipeInfo = not isRetail and _GetRecipeInfo_NonRetail			-- character based in cata, not in retail
+			},
 		}
 	})
 	
 	DataStore:RegisterMethod(addon, "IsCraftKnown", _IsCraftKnown)
-	DataStore:RegisterMethod(addon, "GetRecipeInfo", _GetRecipeInfo)
+	if isRetail then
+		DataStore:RegisterMethod(addon, "GetRecipeInfo", _GetRecipeInfo)
+	end
 	DataStore:RegisterMethod(addon, "IterateRecipes", _IterateRecipes)
 	DataStore:RegisterMethod(addon, "GetNumRecipeCategories", _GetNumRecipeCategories)
 	DataStore:RegisterMethod(addon, "GetNumRecipeCategorySubItems", _GetNumRecipeCategorySubItems)
