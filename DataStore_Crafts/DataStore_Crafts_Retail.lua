@@ -791,7 +791,7 @@ DataStore:OnAddonLoaded(addonName, function()
 		},
 		characterTables = {
 			["DataStore_Crafts_Characters"] = {
-				GetRecipeInfo = not isRetail and _GetRecipeInfo_NonRetail			-- character based in cata, not in retail
+				GetRecipeInfo_NonRetail = isRetail and nil or _GetRecipeInfo_NonRetail			-- character based in cata, not in retail
 			},
 		}
 	})
@@ -800,6 +800,7 @@ DataStore:OnAddonLoaded(addonName, function()
 	if isRetail then
 		DataStore:RegisterMethod(addon, "GetRecipeInfo", _GetRecipeInfo)
 	end
+	
 	DataStore:RegisterMethod(addon, "IterateRecipes", _IterateRecipes)
 	DataStore:RegisterMethod(addon, "GetNumRecipeCategories", _GetNumRecipeCategories)
 	DataStore:RegisterMethod(addon, "GetNumRecipeCategorySubItems", _GetNumRecipeCategorySubItems)
