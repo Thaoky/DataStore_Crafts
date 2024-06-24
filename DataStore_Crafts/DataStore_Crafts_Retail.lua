@@ -594,10 +594,15 @@ local function OnChatMsgSkill(self, message)
 	local skill = message:match(skillUpMsg)
 	if not skill then return end
 	
-	local info = C_TradeSkillUI.GetChildProfessionInfo()
-	-- if we gained a skill point in the currently opened profession pane, rescan
-	if skill == info.professionName then	
-		ScanTradeSkills()
+	if isRetail then
+		local info = C_TradeSkillUI.GetChildProfessionInfo()
+		-- if we gained a skill point in the currently opened profession pane, rescan
+		if skill == info.professionName then	
+			ScanTradeSkills()
+		end
+	else
+		local tradeSkillName = GetTradeSkillLine()
+		if tradeSkillName == "UNKNOWN" then return end
 	end
 
 	ScanProfessionLinks() -- added to update skills upon firing of skillup event 
