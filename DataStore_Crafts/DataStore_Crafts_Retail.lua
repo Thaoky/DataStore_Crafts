@@ -396,7 +396,7 @@ local function ScanRecipes_NonRetail()
 	
 	local professionIndex = char.Indices[tradeskillName]
 	local profession = char.Professions[professionIndex]
-	
+	if not profession then return end
 	
 	if isCata then
 		-- Get profession link

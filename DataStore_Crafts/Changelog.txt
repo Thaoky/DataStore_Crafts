@@ -2,6 +2,10 @@ DataStore Changelog (dates in dd/mm/yyyy)
 ===================
 
 
+Version 2024.06.26 (24/06/2026)
+
+- Fixed an error when opening the runeforging panel.
+
 Version 2024.06.24 (24/06/2024)
 
 - Fixed an error when gaining a skill point.
