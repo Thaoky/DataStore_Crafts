@@ -4,7 +4,7 @@ local addonName, addon = ...
 local thisCharacter
 
 local DataStore = DataStore
-local GetNumArchaeologyRaces, GetNumArtifactsByRace, GetSpellInfo, GetArtifactInfoByRace = GetNumArchaeologyRaces, GetNumArtifactsByRace, GetSpellInfo, GetArtifactInfoByRace
+local GetNumArchaeologyRaces, GetNumArtifactsByRace, GetArtifactInfoByRace = GetNumArchaeologyRaces, GetNumArtifactsByRace, GetArtifactInfoByRace
 
 local function ScanArcheologyItems()
 	if not IsArtifactCompletionHistoryAvailable() then return end
@@ -22,7 +22,7 @@ local function ScanArcheologyItems()
 			-- Create a table where ["Artifact Name"] = associated spell id 
 			-- this is necessary because the archaeology API does not return any other way to match artifacts with either spell ID or item ID
 			for index, artifact in pairs(addon.artifactDB[raceIndex]) do
-				spellName = GetSpellInfo(artifact.spellID)
+				spellName = C_Spell.GetSpellName(artifact.spellID)
 				names[spellName] = artifact.spellID
 			end
 			

@@ -4,8 +4,6 @@ local L = DataStore:GetLocale(addonName)
 local isVanilla = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
-local GetSpellInfo = GetSpellInfo
-
 local SPELL_ID_ALCHEMY = 2259
 local SPELL_ID_BLACKSMITHING = 3100
 local SPELL_ID_ENCHANTING = 7411
@@ -63,7 +61,7 @@ DataStore:OnPlayerLogin(function()
 	local localizedName
 	
 	for englishName, spellID in pairs(spellIDs) do
-		localizedName = GetSpellInfo(spellID)
+		localizedName = C_Spell.GetSpellName(spellID)
 		localizedSpells[localizedName] = spellID
 	end
 	

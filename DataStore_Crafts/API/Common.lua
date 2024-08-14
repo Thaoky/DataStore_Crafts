@@ -2,7 +2,7 @@ local addonName, addon = ...
 
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
-local TableRemove, strsplit, type, tonumber, GetSpellInfo = table.remove, strsplit, type, tonumber, GetSpellInfo
+local TableRemove, strsplit, type, tonumber = table.remove, strsplit, type, tonumber
 local resultItemsDB, reagentsDB
 
 -- *** Utility functions ***

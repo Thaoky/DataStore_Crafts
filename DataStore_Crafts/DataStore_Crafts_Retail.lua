@@ -9,8 +9,8 @@ local thisCharacter
 local reagentsDB, resultItemsDB, recipeCategoriesDB
 
 local DataStore, TableConcat, TableInsert, format, gsub, type = DataStore, table.concat, table.insert, format, gsub, type
-local GetProfessions, GetProfessionInfo, GetSpellInfo = GetProfessions, GetProfessionInfo, GetSpellInfo
-local C_TradeSkillUI = C_TradeSkillUI
+local GetProfessions, GetProfessionInfo = GetProfessions, GetProfessionInfo
+local C_TradeSkillUI, C_Spell = C_TradeSkillUI, C_Spell
 
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
@@ -373,7 +373,7 @@ local function ScanRecipes_NonRetail()
 	
 	-- special treatment for frFR, change "Secourisme" into "Premiers soins"
 	if tradeskillName == "Secourisme" then
-		tradeskillName = GetSpellInfo(SPELL_ID_FIRSTAID)
+		tradeskillName = C_Spell.GetSpellName(SPELL_ID_FIRSTAID)
 	end
 	
 	-- number of known entries in the current skill list including headers and categories
