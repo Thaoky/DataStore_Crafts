@@ -774,13 +774,22 @@ local function _IsCraftKnown(profession, spellID)
 	-- returns true if a given spell ID is known in the profession passed as first argument
 	local isKnown
 	
-	_IterateRecipes(profession, 0, 0, function(recipeData) 
-		local _, recipeID, isLearned = _GetRecipeInfo(recipeData)
-		if recipeID == spellID and isLearned then
-			isKnown = true
-			return true	-- stop iteration
-		end
-	end)
+	if isRetail then
+		_IterateRecipes(profession, 0, 0, function(recipeData) 
+			local _, recipeID, isLearned = _GetRecipeInfo(recipeData)
+			if recipeID == spellID and isLearned then
+				isKnown = true
+				return true	-- stop iteration
+			end
+		end)
+	else
+		_IterateRecipes(profession, 0, 0, function(color, itemID)
+			if itemID == spellID then
+				isKnown = true
+				return true	-- stop iteration
+			end
+		end)
+	end
 
 	return isKnown
 end
