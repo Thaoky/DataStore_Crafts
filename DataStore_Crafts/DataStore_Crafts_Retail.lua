@@ -221,10 +221,11 @@ local function ScanProfessionLinks()
 	ScanProfessionInfo(prof2, 2)
 	ScanProfessionInfo(cook, 3)
 	ScanProfessionInfo(fish, 4)
-	if isRetail then
+	if isRetail or isCata then
 		ScanProfessionInfo(arch, 5)
-	else
-		ScanProfessionInfo(firstAid, 5)
+	end
+	if not isRetail then
+		ScanProfessionInfo(firstAid, 6)
 	end
 	
 	thisCharacter.lastUpdate = time()
@@ -373,7 +374,7 @@ local function ScanRecipes_NonRetail()
 	
 	-- special treatment for frFR, change "Secourisme" into "Premiers soins"
 	if tradeskillName == "Secourisme" then
-		tradeskillName = C_Spell.GetSpellName(SPELL_ID_FIRSTAID)
+		tradeskillName = GetSpellInfo(SPELL_ID_FIRSTAID)
 	end
 	
 	-- number of known entries in the current skill list including headers and categories
@@ -685,7 +686,6 @@ local function _GetRecipeInfo(recipeData)
 end
 
 local function _GetRecipeInfo_NonRetail(character, profession, index)
-
 	local profIndex = character.Indices[profession]		-- Get the profession index
 	-- local prof = DataStore:GetProfession(character, profession)
 	local prof = character.Professions[profIndex]
@@ -703,7 +703,6 @@ end
 local function _IterateRecipes(profession, mainCategory, subCategory, callback)
 	-- mainCategory : category index (or 0 for all)
 	-- subCategory : sub-category index (or 0 for all)
-	
 	if not isRetail then
 		local crafts = profession.Crafts
 		if not crafts then return end			-- can be nil for gathering professions
@@ -773,7 +772,7 @@ end
 local function _IsCraftKnown(profession, spellID)
 	-- returns true if a given spell ID is known in the profession passed as first argument
 	local isKnown
-	
+
 	_IterateRecipes(profession, 0, 0, function(recipeData) 
 		local _, recipeID, isLearned = _GetRecipeInfo(recipeData)
 		if recipeID == spellID and isLearned then
