@@ -1,5 +1,5 @@
 local addonName = ...
-local L = DataStore:SetLocale(addonName, "esES")
+local L = AddonFactory:SetLocale(addonName, "esES")
 if not L then return end
 
 L["Broadcast my profession links to guild at logon"] = "Transmitir mis vínculos de profesión a la hermandad al iniciar sesión"

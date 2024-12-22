@@ -785,7 +785,7 @@ local function _IsCraftKnown(profession, spellID)
 	return isKnown
 end
 
-DataStore:OnAddonLoaded(addonName, function() 
+AddonFactory:OnAddonLoaded(addonName, function() 
 	DataStore:RegisterModule({
 		addon = addon,
 		addonName = addonName,
@@ -834,7 +834,7 @@ DataStore:OnAddonLoaded(addonName, function()
 	end
 end)
 
-DataStore:OnPlayerLogin(function()
+AddonFactory:OnPlayerLogin(function()
 	addon:ListenTo("PLAYER_ALIVE", ScanProfessionLinks)
 	addon:ListenTo("TRADE_SKILL_SHOW", OnTradeSkillShow)
 	addon:ListenTo("CHAT_MSG_SKILL", OnChatMsgSkill)

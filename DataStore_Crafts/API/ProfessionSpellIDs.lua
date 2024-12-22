@@ -1,6 +1,6 @@
 local addonName, addon = ...
 
-local L = DataStore:GetLocale(addonName)
+local L = AddonFactory:GetLocale(addonName)
 local isVanilla = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
@@ -47,14 +47,14 @@ for english, localized in pairs(L) do
 	end
 end
 
-DataStore:OnAddonLoaded(addonName, function() 
+AddonFactory:OnAddonLoaded(addonName, function() 
 	DataStore:RegisterMethod(addon, "GetProfessionSpellID", function(name)
 		-- name can be either the english name or the localized name
 		return spellIDs[name] or 0
 	end)
 end)
 
-DataStore:OnPlayerLogin(function()
+AddonFactory:OnPlayerLogin(function()
 	-- Add localized entries in the spellIDs table
 	
 	local localizedSpells = {}		-- avoid infinite loop by storing in a temp table first

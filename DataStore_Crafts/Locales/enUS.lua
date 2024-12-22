@@ -1,5 +1,5 @@
 local addonName = ...
-local L = DataStore:SetDefaultLocale(addonName, "enUS")
+local L = AddonFactory:SetDefaultLocale(addonName, "enUS")
 
 L["Broadcast my profession links to guild at logon"] = true
 L["BROADCAST_PROFS_DISABLED"] = "Nothing will be sent at all. Disabling this option considerably decreases network traffic on the guild channel."

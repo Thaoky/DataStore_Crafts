@@ -63,7 +63,7 @@ local function _GetCraftReagents(recipeID)
 	return reagentsDB[recipeID]
 end
 
-DataStore:OnAddonLoaded(addonName, function() 
+AddonFactory:OnAddonLoaded(addonName, function() 
 	DataStore:RegisterTables({
 		addon = addon,
 		characterTables = {

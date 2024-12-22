@@ -1,5 +1,5 @@
 local addonName = ...
-local L = DataStore:SetLocale(addonName, "zhTW")
+local L = AddonFactory:SetLocale(addonName, "zhTW")
 if not L then return end
 
 L["Broadcast my profession links to guild at logon"] = "上線時在公會廣播我的專業聯繫"

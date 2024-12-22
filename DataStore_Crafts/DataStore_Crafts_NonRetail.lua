@@ -8,7 +8,7 @@ local addonName, addon = ...
 local thisCharacter
 -- local reagentsDB, resultItemsDB, recipeCategoriesDB
 
-local L = DataStore:GetLocale("DataStore_Crafts")
+local L = AddonFactory:GetLocale("DataStore_Crafts")
 
 local TableConcat, TableInsert, TableRemove, format = table.concat, table.insert, table.remove, format
 local GetTradeSkillSelectionIndex, GetTradeSkillSubClasses, GetTradeSkillInvSlots, GetSubClassID, GetInvSlotID = GetTradeSkillSelectionIndex, GetTradeSkillSubClasses, GetTradeSkillInvSlots, GetSubClassID, GetInvSlotID
@@ -675,7 +675,7 @@ local function _IsCraftKnown(profession, soughtID)
 	return isKnown
 end
 
-DataStore:OnAddonLoaded(addonName, function() 
+AddonFactory:OnAddonLoaded(addonName, function() 
 	DataStore:RegisterModule({
 		addon = addon,
 		addonName = addonName,
@@ -702,7 +702,7 @@ DataStore:OnAddonLoaded(addonName, function()
 	-- recipeCategoriesDB = DataStore_Crafts_RecipeCategories
 end)
 
-DataStore:OnPlayerLogin(function()
+AddonFactory:OnPlayerLogin(function()
 	addon:ListenTo("PLAYER_ALIVE", ScanProfessionLinks)
 	addon:ListenTo("TRADE_SKILL_SHOW", OnTradeSkillShow)
 	addon:ListenTo("CHAT_MSG_SKILL", OnChatMsgSkill)
