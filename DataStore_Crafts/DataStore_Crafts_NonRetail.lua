@@ -272,7 +272,7 @@ local function ScanCooldowns()
 				-- ex: "Hexweave Cloth|86220|1533539676" expire at "now + cooldown"
 				TableInsert(profession.Cooldowns, format("%s|%d|%d", skillName, cooldown, cooldown + time()))
 				
-				DataStore:Broadcast("DATASTORE_PROFESSION_COOLDOWN_UPDATED")
+				AddonFactory:Broadcast("DATASTORE_PROFESSION_COOLDOWN_UPDATED")
 			end
 		end
 	end
@@ -402,7 +402,7 @@ local function ScanRecipes()
 		end
 	end
 	
-	DataStore:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
+	AddonFactory:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
 end
 
 local function ScanEnchantingRecipes()

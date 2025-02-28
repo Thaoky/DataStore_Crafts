@@ -229,7 +229,7 @@ local function ScanProfessionLinks()
 	
 	thisCharacter.lastUpdate = time()
 	
-	DataStore:Broadcast("DATASTORE_PROFESSION_LINKS_UPDATED")
+	AddonFactory:Broadcast("DATASTORE_PROFESSION_LINKS_UPDATED")
 end
 
 local SkillTypeToColor = {
@@ -365,7 +365,7 @@ local function ScanRecipes_Retail()
 		end
 	end
 	
-	DataStore:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
+	AddonFactory:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
 end
 
 local function ScanRecipes_NonRetail()
@@ -498,7 +498,7 @@ local function ScanRecipes_NonRetail()
 		end
 	end
 	
-	DataStore:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
+	AddonFactory:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
 end
 
 local function ScanTradeSkills()
@@ -532,7 +532,7 @@ local function OnTradeSkillListUpdate(self)
 	local cooldown = C_TradeSkillUI.GetRecipeCooldown(currentCraftRecipeID)
 	if cooldown then
 		ScanRecipes_Retail()
-		DataStore:Broadcast("DATASTORE_PROFESSION_COOLDOWN_UPDATED")
+		AddonFactory:Broadcast("DATASTORE_PROFESSION_COOLDOWN_UPDATED")
 		currentCraftRecipeID = nil
 	end
 end
