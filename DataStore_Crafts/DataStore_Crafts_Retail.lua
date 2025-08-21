@@ -775,6 +775,7 @@ local function _GetNumRecipesByColor(profession)
 		if recipeData then
 			local color = _GetRecipeInfo(recipeData)
 			counts[color] = counts[color] + 1
+		end
 	end)
 	
 	return counts[3], counts[2], counts[1], counts[0]		-- orange, yellow, green, grey
