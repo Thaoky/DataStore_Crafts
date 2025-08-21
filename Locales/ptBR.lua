@@ -1,0 +1,3 @@
+local addonName = ...
+local L = AddonFactory:SetLocale(addonName, "ptBR")
+if not L then return end

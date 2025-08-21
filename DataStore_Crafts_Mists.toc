@@ -1,0 +1,16 @@
+## Interface: 50500
+## Title: DataStore_Crafts
+## IconTexture: Interface\Icons\garrison_building_storehouse
+
+## Notes: Stores information about professions & crafts
+## Author: Thaoky (EU-Marécages de Zangar)
+## Version: 2025.08.21
+## Dependencies: AddonFactory, DataStore
+## SavedVariables: DataStore_Crafts_Characters, DataStore_Crafts_Reagents, DataStore_Crafts_ResultItems
+## X-Category: Interface Enhancements
+
+Locale.xml
+
+DataStore_Crafts_Retail.lua
+API\Common.lua
+API\ProfessionSpellIDs.lua

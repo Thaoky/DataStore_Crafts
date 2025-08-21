@@ -1,0 +1,61 @@
+DataStore Changelog (dates in dd/mm/yyyy)
+===================
+
+
+Version 2025.08.21 (21/08/2025)
+
+- Updated ToC for Mists of Pandaria and 11.2.
+
+Version 2025.02.28 (28/02/2025)
+
+- ToC Update.
+
+Version 2024.11.11 (11/11/2024)
+
+- ToC Update.
+
+Version 2024.09.15 (15/09/2024)
+
+- ToC Update.
+
+Version 2024.08.14 (14/08/2024)
+
+- ToC Update.
+
+Version 2024.07.28 (28/07/2024)
+
+- ToC Update.
+
+Version 2024.06.26 (24/06/2026)
+
+- Fixed an error when opening the runeforging panel.
+
+Version 2024.06.24 (24/06/2024)
+
+- Fixed an error when gaining a skill point.
+
+Version 2024.06.23 (23/06/2024)
+
+- Several fixes for Cataclysm
+
+Version 2024.06.15 (15/06/2024)
+
+- Fixed a Lua error related to cooldowns when scanning a profession (Thanks Stormspark!).
+
+Version 2024.06.09 (09/06/2024)
+
+- Fixed an issue when opening NPC profession panels.
+- Cooldowns are now properly wiped before a scan (retail).
+
+Version 2024.05.20 (20/05/2024)
+
+- Stopped using Ace libraries
+- Using locals for all global functions
+- Using new tables in the SV file. 
+- Each 'domain' is now in its own file, under the API folder.
+
+Version 2023.11.26 (26/11/2023)
+
+- As of this version, this DataStore module will be released in a single package compatible with all versions of the game.
+- As of this version, the version number will no longer be 1.x or 9.x, but rather a date that clearly identifies when the release took place.
+
