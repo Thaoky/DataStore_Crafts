@@ -1,6 +1,9 @@
 local addonName, addon = ...
 
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+local isMists = (LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_MISTS_OF_PANDARIA)
+--local isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
+local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 
 local TableRemove, strsplit, type, tonumber = table.remove, strsplit, type, tonumber
 local resultItemsDB, reagentsDB
@@ -12,8 +15,8 @@ local professionIndices = {
 	Profession2 = 2,
 	Cooking = 3,
 	Fishing = 4,
-	Archeology = 5,	-- retail & cata
-	FirstAid = 6,		-- cata
+	Archaeology = 5,	-- cata & above
+	FirstAid = 6,		-- prior to Battle for Azeroth
 }
 
 local function _GetProfessionRankByIndex(character, professionIndex)
@@ -106,12 +109,13 @@ AddonFactory:OnAddonLoaded(addonName, function()
 				-- Profession ranks
 				GetProfessionRank = _GetProfessionRank,
 				GetProfessionRankByIndex = function(character, index) return _GetProfessionRankByIndex(character, index) end,
-				GetProfession1Rank = function(character) return _GetProfessionRankByIndex(character, 1) end,
-				GetProfession2Rank = function(character) return _GetProfessionRankByIndex(character, 2) end,
-				GetCookingRank = function(character) return _GetProfessionRankByIndex(character, 3) end,
-				GetFishingRank = function(character) return _GetProfessionRankByIndex(character, 4) end,
-				GetFirstAidRank = (not isRetail) and function(character) return _GetProfessionRankByIndex(character, 5) end,
-				GetArchaeologyRank = isRetail and function(character) return _GetProfessionRankByIndex(character, 5) end,
+				GetProfession1Rank = function(character) return _GetProfessionRankByIndex(character, professionIndices.Profession1) end,
+				GetProfession2Rank = function(character) return _GetProfessionRankByIndex(character, professionIndices.Profession2) end,
+				GetCookingRank = function(character) return _GetProfessionRankByIndex(character, professionIndices.Cooking) end,
+				GetFishingRank = function(character) return _GetProfessionRankByIndex(character, professionIndices.Fishing) end,
+				GetFirstAidRank = (not isRetail) and function(character) return _GetProfessionRankByIndex(character, professionIndices.FirstAid) end,
+				--GetArchaeologyRank = (not isClassic) and function(character) return _GetProfessionRankByIndex(character, professionIndices.Archaeology) end,
+				GetArchaeologyRank = (hasArchaeology) and function(character) return _GetProfessionRankByIndex(character, professionIndices.Archaeology) end,
 			},
 		}
 	})

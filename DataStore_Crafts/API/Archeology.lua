@@ -1,10 +1,11 @@
-if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
+if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then return end
 
 local addonName, addon = ...
 local thisCharacter
 
 local DataStore = DataStore
 local GetNumArchaeologyRaces, GetNumArtifactsByRace, GetArtifactInfoByRace = GetNumArchaeologyRaces, GetNumArtifactsByRace, GetArtifactInfoByRace
+local API_GetSpellName = GetSpellInfo or C_Spell.GetSpellName										 
 
 local function ScanArcheologyItems()
 	if not IsArtifactCompletionHistoryAvailable() then return end
@@ -22,7 +23,7 @@ local function ScanArcheologyItems()
 			-- Create a table where ["Artifact Name"] = associated spell id 
 			-- this is necessary because the archaeology API does not return any other way to match artifacts with either spell ID or item ID
 			for index, artifact in pairs(addon.artifactDB[raceIndex]) do
-				spellName = C_Spell.GetSpellName(artifact.spellID)
+				spellName = API_GetSpellName(artifact.spellID)
 				names[spellName] = artifact.spellID
 			end
 			
