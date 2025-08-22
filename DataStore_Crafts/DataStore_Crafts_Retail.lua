@@ -14,6 +14,9 @@ local C_TradeSkillUI, C_Spell = C_TradeSkillUI, C_Spell
 
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
+local API_GetSpellName = GetSpellInfo or C_Spell.GetSpellName
+local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
+local hasAdvancedProfessionInfo = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 
 -- *** Utility functions ***
 local bit64 = LibStub("LibBit64")
@@ -221,10 +224,13 @@ local function ScanProfessionLinks()
 	ScanProfessionInfo(prof2, 2)
 	ScanProfessionInfo(cook, 3)
 	ScanProfessionInfo(fish, 4)
-	if isRetail then
+
+	if hasArchaeology then
 		ScanProfessionInfo(arch, 5)
-	else
-		ScanProfessionInfo(firstAid, 5)
+	end
+
+	if not isRetail then
+		ScanProfessionInfo(firstAid, 6)
 	end
 	
 	thisCharacter.lastUpdate = time()
@@ -373,7 +379,7 @@ local function ScanRecipes_NonRetail()
 	
 	-- special treatment for frFR, change "Secourisme" into "Premiers soins"
 	if tradeskillName == "Secourisme" then
-		tradeskillName = C_Spell.GetSpellName(SPELL_ID_FIRSTAID)
+		tradeskillName = API_GetSpellName(SPELL_ID_FIRSTAID)
 	end
 	
 	-- number of known entries in the current skill list including headers and categories
@@ -398,7 +404,7 @@ local function ScanRecipes_NonRetail()
 	local profession = char.Professions[professionIndex]
 	if not profession then return end
 	
-	if isCata then
+	if hasAdvancedProfessionInfo then
 		-- Get profession link
 		local profLink = GetTradeSkillListLink()
 		if profLink then	-- sometimes a nil value may be returned, so keep the old one if nil
@@ -442,7 +448,7 @@ local function ScanRecipes_NonRetail()
 		
 		-- Get recipeID
 		
-		if isCata then
+		if hasAdvancedProfessionInfo then
 			recipeLink = GetTradeSkillRecipeLink(i) -- add recipe link here to get recipeID
 			if recipeLink then
 				local found, _, enchantString = string.find(recipeLink, "^|%x+|H(.+)|h%[.+%]")
@@ -458,7 +464,7 @@ local function ScanRecipes_NonRetail()
 		if link then
 			itemID = tonumber(link:match("item:(%d+)"))
 			
-			if isCata then
+			if hasAdvancedProfessionInfo then
 				if itemID and recipeID then
 					local maxMade = 1
 					resultItemsDB[recipeID] = maxMade + bit64:LeftShift(itemID, 8) 	-- bits 0-7 = maxMade, bits 8+ = item id
@@ -488,7 +494,7 @@ local function ScanRecipes_NonRetail()
 				end
 
 				-- if there is a valid recipeID, save it
-				if isCata then
+				if hasAdvancedProfessionInfo then
 					craftInfo = (recipeLink and recipeID) and recipeID or ""
 				else
 					craftInfo = (link and itemID) and itemID or ""
@@ -713,25 +719,28 @@ local function _IterateRecipes(profession, mainCategory, subCategory, callback)
 		
 		-- loop through recipes
 		for i = 1, #crafts do
-			-- id = itemID in vanilla, recipeID in LK
-			local color, id = strsplit("|", crafts[i])
+			-- Somehow the scan can set an item to nil
+			if crafts[i] then
+				-- id = itemID in vanilla, recipeID in LK
+				local color, id = strsplit("|", crafts[i] or "|")
 
-			color = tonumber(color)
-			if color == 0 then			-- it's a header
-				currentCategory = currentCategory + 1
-				-- no callback for headers
-			else
-				if (mainCategory == 0) or (currentCategory == mainCategory) then
-					id = tonumber(id)	-- it's a spellID, return a number
-					stop = callback(color, id, i)
+				color = tonumber(color)
+				if color == 0 then			-- it's a header
+					currentCategory = currentCategory + 1
+					-- no callback for headers
+				else
+					if (mainCategory == 0) or (currentCategory == mainCategory) then
+						id = tonumber(id)	-- it's a spellID, return a number
+						stop = callback(color, id, i)
+					end
+					
+					-- exit if the callback returns true
+					if stop then return end
 				end
-				
-				-- exit if the callback returns true
-				if stop then return end
 			end
 		end
 	end
-	
+ 	
 	
 	-- loop through categories
 	for catIndex = 1, _GetNumRecipeCategories(profession) do
@@ -763,8 +772,10 @@ local function _GetNumRecipesByColor(profession)
 	local counts = { [0] = 0, [1] = 0, [2] = 0, [3] = 0 }
 	
 	_IterateRecipes(profession, 0, 0, function(recipeData) 
-		local color = _GetRecipeInfo(recipeData)
-		counts[color] = counts[color] + 1
+		if recipeData then
+			local color = _GetRecipeInfo(recipeData)
+			counts[color] = counts[color] + 1
+		end
 	end)
 	
 	return counts[3], counts[2], counts[1], counts[0]		-- orange, yellow, green, grey

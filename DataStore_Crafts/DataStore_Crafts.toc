@@ -1,10 +1,10 @@
-## Interface: 110100
+## Interface: 110200
 ## Title: DataStore_Crafts
 ## IconTexture: Interface\Icons\garrison_building_storehouse
 
 ## Notes: Stores information about professions & crafts
 ## Author: Thaoky (EU-Marécages de Zangar)
-## Version: 2025.02.28
+## Version: 2025.08.21
 ## Dependencies: AddonFactory, DataStore
 ## SavedVariables: DataStore_Crafts_Characters, DataStore_Crafts_ArcheologyItems, DataStore_Crafts_RecipeCategories
 ## X-Category: Interface Enhancements
