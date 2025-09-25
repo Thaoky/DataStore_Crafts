@@ -4,7 +4,7 @@
 
 ## Notes: Stores information about professions & crafts
 ## Author: Thaoky (EU-Marécages de Zangar)
-## Version: 2025.08.21
+## Version: 2025.09.25
 ## Dependencies: AddonFactory, DataStore
 ## SavedVariables: DataStore_Crafts_Characters, DataStore_Crafts_ArcheologyItems, DataStore_Crafts_RecipeCategories
 ## X-Category: Interface Enhancements
