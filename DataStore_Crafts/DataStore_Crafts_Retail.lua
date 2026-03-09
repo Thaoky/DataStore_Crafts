@@ -18,6 +18,7 @@ local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
 local API_GetSpellName = GetSpellInfo or C_Spell.GetSpellName
 local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 local hasAdvancedProfessionInfo = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
+local recipeIsSpell = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_WRATH_OF_THE_LICH_KING)
 
 -- *** Utility functions ***
 local bit64 = LibStub("LibBit64")
@@ -472,12 +473,16 @@ local function ScanRecipes_NonRetail()
 	-- number of known entries in the current skill list including headers and categories
 	local numTradeSkills = GetNumTradeSkills()
 	local skillName, skillType, _, _, altVerb = GetTradeSkillInfo(1)	-- test the first line
+	if CraftIsEnchanting and CraftIsEnchanting() then
+		tradeskillName = GetCraftName()
+	end
 
 	-- This method seems to be stable to not miss skills, or to make incomplete scans. At least in Classic.
-	if not tradeskillName or not numTradeSkills
+	if (not tradeskillName or not numTradeSkills
 		or	tradeskillName == "UNKNOWN"
 		or	numTradeSkills == 0
-		or (skillType ~= "header" and skillType ~= "subheader") then
+		or (skillType ~= "header" and skillType ~= "subheader"))
+		and CraftIsEnchanting and not CraftIsEnchanting() then
 		
 		-- if for any reason the frame is not ready, call it again in 1 second
 		-- C_Timer.After(0.5, ScanRecipes)
@@ -589,7 +594,28 @@ local function ScanRecipes_NonRetail()
 			crafts[i] = format("%s|%s", color, craftInfo)
 		end
 	end
-	
+
+	-- Old school enchanting
+	if CraftIsEnchanting and CraftIsEnchanting() then
+		for i = 1, GetNumCrafts() do
+			wipe(reagentsInfo)
+			local enchantLink = GetCraftItemLink(i)
+			local enchantID = tonumber(enchantLink:match("enchant:(%d+)"))
+
+			-- Loop through reagents
+			for reagentIndex = 1, GetCraftNumReagents(i) do
+				local _, _, count = GetCraftReagentInfo(i, reagentIndex)
+				local reagentLink = GetCraftReagentItemLink(i, reagentIndex)
+				local reagentItemID = tonumber(reagentLink:match("item:(%d+)"))
+				TableInsert(reagentsInfo, format("%s,%s", reagentItemID, count))
+			end
+
+			-- Save the enchant and reagents
+			crafts[i] = format("%s|%s", 1, enchantID)  -- Using 1 as a default difficulty (not sure where to get difficulty for enchants)
+			reagentsDB[enchantID] = TableConcat(reagentsInfo, "|")
+		end
+	end
+
 	AddonFactory:Broadcast("DATASTORE_RECIPES_SCANNED", char, tradeskillName)
 end
 
@@ -783,9 +809,21 @@ local function _GetRecipeInfo_NonRetail(character, profession, index)
 	local prof = character.Professions[profIndex]
 
 	local crafts = prof.Crafts
-	
+
 	-- id = itemID in vanilla, recipeID in LK
 	local color, id, icon = strsplit("|", crafts[index])
+
+	-- Check for a valid icon (assume item first, then spell)
+	if id and not icon then
+		if recipeIsSpell then
+			local spellInfo = C_Spell.GetSpellInfo(id)
+			if spellInfo then
+				icon = spellInfo.iconID
+			end
+		else
+			icon = C_Item.GetItemIconByID(id)
+		end
+	end
 
 	return tonumber(color), tonumber(id), icon
 end
@@ -802,10 +840,10 @@ local function _IterateRecipes(profession, mainCategory, subCategory, callback)
 	if not isRetail then
 		local crafts = profession.Crafts
 		if not crafts then return end			-- can be nil for gathering professions
-		
+
 		local currentCategory = 0
 		local stop
-		
+
 		-- loop through recipes
 		for i = 1, #crafts do
 			-- Somehow the scan can set an item to nil
@@ -822,15 +860,14 @@ local function _IterateRecipes(profession, mainCategory, subCategory, callback)
 						id = tonumber(id)	-- it's a spellID, return a number
 						stop = callback(color, id, i)
 					end
-					
+
 					-- exit if the callback returns true
 					if stop then return end
 				end
 			end
 		end
 	end
- 	
-	
+
 	-- loop through categories
 	for catIndex = 1, _GetNumRecipeCategories(profession) do
 		-- if there is no filter on main category, or if it is just the one we want to see
@@ -957,6 +994,7 @@ AddonFactory:OnPlayerLogin(function()
 	addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
 	addon:ListenTo("TRADE_SKILL_DATA_SOURCE_CHANGED", ScanTradeSkills)
 	addon:ListenTo("TRADE_SKILL_LIST_UPDATE", OnTradeSkillListUpdate)
+
+	addon:ListenTo("CRAFT_SHOW", ScanTradeSkills)
+	addon:ListenTo("CRAFT_UPDATE", ScanTradeSkills)
 end)
-
-
