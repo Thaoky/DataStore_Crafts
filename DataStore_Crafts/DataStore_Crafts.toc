@@ -6,7 +6,7 @@
 ## Author: Thaoky (EU-Marécages de Zangar)
 ## Version: 2026.01.16
 ## Dependencies: AddonFactory, DataStore
-## SavedVariables: DataStore_Crafts_Characters, DataStore_Crafts_ArcheologyItems, DataStore_Crafts_RecipeCategories
+## SavedVariables: DataStore_Crafts_Characters, DataStore_Crafts_ArcheologyItems, DataStore_Crafts_RecipeCategories, DataStore_Crafts_Reagents
 ## X-Category: Interface Enhancements
 
 ## Category: Libraries
