@@ -540,14 +540,15 @@ local function ScanRecipes_NonRetail()
 		
 		-- Get recipeID
 		
-		if hasAdvancedProfessionInfo then
-			recipeLink = GetTradeSkillRecipeLink(i) -- add recipe link here to get recipeID
-			if recipeLink then
-				local found, _, enchantString = string.find(recipeLink, "^|%x+|H(.+)|h%[.+%]")
-				recipeID = tonumber(enchantString:match("enchant:(%d+)"))
-				if recipeID then
-					reagentsDB[recipeID] = TableConcat(reagentsInfo, "|")
-				end
+		recipeLink = GetTradeSkillRecipeLink(i) -- add recipe link here to get recipeID
+		if not recipeLink then
+			recipeLink = GetCraftRecipeLink(i)
+		end
+		if recipeLink then
+			local found, _, enchantString = string.find(recipeLink, "^|%x+|H(.+)|h%[.+%]")
+			recipeID = tonumber(enchantString:match("enchant:(%d+)"))
+			if recipeID then
+				reagentsDB[recipeID] = TableConcat(reagentsInfo, "|")
 			end
 		end
 
@@ -555,7 +556,7 @@ local function ScanRecipes_NonRetail()
 		link = GetTradeSkillItemLink(i)
 		if link then
 			itemID = tonumber(link:match("item:(%d+)"))
-			
+
 			if hasAdvancedProfessionInfo then
 				if itemID and recipeID then
 					local maxMade = 1
@@ -585,7 +586,7 @@ local function ScanRecipes_NonRetail()
 				end
 
 				-- if there is a valid recipeID, save it
-				if hasAdvancedProfessionInfo then
+				if recipeLink then
 					craftInfo = (recipeLink and recipeID) and recipeID or ""
 				else
 					craftInfo = (link and itemID) and itemID or ""
@@ -925,7 +926,7 @@ end
 -- returns true if a given item ID (past Vanilla) or spell ID (Vanilla) is known in the profession passed as first argument
 local function _IsCraftKnown_NonRetail(profession, soughtID)
 	local isKnown = false
-	
+
 	_IterateRecipes(profession, 0, 0, function(color, itemID)
 		if itemID == soughtID then
 			isKnown = true
