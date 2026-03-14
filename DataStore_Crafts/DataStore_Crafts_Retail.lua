@@ -237,17 +237,12 @@ local function ScanProfessionLinks_NonRetail()
 	local category
 	for i = 1, GetNumSkillLines() do
 		local profName, isHeader, _, rank, _, _, maxRank = GetSkillLineInfo(i)
-		
-		if profName == "Secourisme" then
-			profName = GetSpellInfo(SPELL_ID_FIRSTAID)
-		end
 
 		if isHeader then
 			category = profName
 		else
 			if category and profName then
 				local field, mainIndex
-				--char.Professions[profName] = char.Professions[profName] or {}
 
 				-- [1] = prof 1, [2] = prof 2, [3] = cooking, [4] = fishing, [5] = archeo (retail) or first aid (classic)
 				if category == L["Professions"] then
@@ -464,12 +459,7 @@ end
 
 local function ScanRecipes_NonRetail()
 	local tradeskillName = GetTradeSkillLine()
-	
-	-- special treatment for frFR, change "Secourisme" into "Premiers soins"
-	if tradeskillName == "Secourisme" then
-		tradeskillName = API_GetSpellName(SPELL_ID_FIRSTAID)
-	end
-	
+
 	-- number of known entries in the current skill list including headers and categories
 	local numTradeSkills = GetNumTradeSkills()
 	local skillName, skillType, _, _, altVerb = GetTradeSkillInfo(1)	-- test the first line
@@ -490,10 +480,9 @@ local function ScanRecipes_NonRetail()
 	end
 
 	local char = thisCharacter
-	-- local profession = char.Professions[tradeskillName]
-	
 	local professionIndex = char.Indices[tradeskillName]
 	local profession = char.Professions[professionIndex]
+
 	if not profession then return end
 
 	if hasAdvancedProfessionInfo then
