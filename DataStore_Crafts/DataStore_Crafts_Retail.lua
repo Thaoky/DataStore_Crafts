@@ -698,6 +698,11 @@ skillUpMsg = gsub(skillUpMsg, arg2pattern, "(%%d+)")
 local function OnChatMsgSkill(self, message)
 	if not message then return end
 
+	-- Chat lockdown by Blizzard breaks this. Not like we need to check for skills being dropped while locked, right?
+	if canaccessvalue and not canaccessvalue(message) then
+		return
+	end
+
 	-- Check it is the right type of message
 	local skill = message:match(skillUpMsg)
 	if not skill then return end
