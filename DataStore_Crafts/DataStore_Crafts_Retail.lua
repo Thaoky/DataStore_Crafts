@@ -18,7 +18,7 @@ local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
 local API_GetSpellName = GetSpellInfo or C_Spell.GetSpellName
 local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 local hasAdvancedProfessionInfo = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
-local recipeIsSpell = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_WRATH_OF_THE_LICH_KING)
+local recipeIsSpell = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_BURNING_CRUSADE)
 
 -- *** Utility functions ***
 local bit64 = LibStub("LibBit64")
@@ -546,6 +546,16 @@ local function ScanRecipes_NonRetail()
 		if link then
 			itemID = tonumber(link:match("item:(%d+)"))
 
+			-- This seems to work for Classic, TBC, and Mists
+			if itemID then
+				reagentsDB[itemID] = TableConcat(reagentsInfo, "|")
+				if recipeID then
+					local maxMade = 1
+					resultItemsDB[recipeID] = maxMade + bit64:LeftShift(itemID, 8) 	-- bits 0-7 = maxMade, bits 8+ = item id
+				end
+			end
+
+			--[[
 			if hasAdvancedProfessionInfo then
 				if itemID and recipeID then
 					local maxMade = 1
@@ -556,6 +566,7 @@ local function ScanRecipes_NonRetail()
 					reagentsDB[itemID] = TableConcat(reagentsInfo, "|")
 				end
 			end
+			]]
 			
 		end
 		-- Scan recipe
@@ -587,6 +598,7 @@ local function ScanRecipes_NonRetail()
 
 	-- Old school enchanting
 	if CraftIsEnchanting and CraftIsEnchanting() then
+		wipe(profession.Categories) -- No categories in old school enchanting and it can erroneously get it from the tradeskill window
 		for i = 1, GetNumCrafts() do
 			wipe(reagentsInfo)
 			local enchantLink = GetCraftItemLink(i)
