@@ -739,6 +739,11 @@ local unlearnMsg = gsub(ERR_SPELL_UNLEARNED_S, arg1pattern, "(.+)")
 local function OnChatMsgSystem(self, message)
 	if not message then return end
 
+	-- Chat lockdown by Blizzard breaks this. Not like we need to check for skills being dropped while locked, right?
+	if canaccessvalue and not canaccessvalue(message) then
+		return
+	end
+
 	-- Check it is the right type of message
 	local skillLink = message:match(unlearnMsg)
 	if not skillLink then return end
