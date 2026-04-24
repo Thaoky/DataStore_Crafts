@@ -773,7 +773,11 @@ local function GetCategoryName(id)
 end
 
 local function _GetNumRecipeCategories(profession)
-	return profession.Categories and #profession.Categories or 0
+	--return profession.Categories and #profession.Categories or 0
+	if profession and profession.Categories then
+		return #profession.Categories
+	end
+	return 0
 end
 
 local function _GetRecipeCategoryInfo(profession, index)
@@ -843,6 +847,7 @@ end
 
 -- Iterate through all recipes, and callback a function for each of them
 local function _IterateRecipes(profession, mainCategory, subCategory, callback)
+	if not profession then return end
 	-- mainCategory : category index (or 0 for all)
 	-- subCategory : sub-category index (or 0 for all)
 	if type(subCategory) == "function" then
