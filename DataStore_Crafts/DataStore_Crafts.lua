@@ -949,8 +949,9 @@ local function OnChatMsgSkill(self, message)
 	if not message then return end
 
 	-- Check it is the right type of message
-	local skill = message:match(skillUpMsg)
-	if not skill then return end
+	-- In WoW 12.0+, CHAT_MSG_SYSTEM args may be secret strings that cannot be indexed by addons
+	local ok, skill = pcall(string.match, message, skillUpMsg)
+	if not ok or not skill then return end
 	
 	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 		local info = C_TradeSkillUI.GetChildProfessionInfo()
@@ -974,8 +975,9 @@ local function OnChatMsgSystem(self, message)
 	if not message then return end
 
 	-- Check it is the right type of message
-	local skillLink = message:match(unlearnMsg)
-	if not skillLink then return end
+	-- In WoW 12.0+, CHAT_MSG_SYSTEM args may be secret strings that cannot be indexed by addons
+	local ok, skillLink = pcall(string.match, message, unlearnMsg)
+	if not ok or not skillLink then return end
 
 	-- Check it is a proper profession
 	local skillName = skillLink:match("%[(.+)%]")
