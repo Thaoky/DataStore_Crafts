@@ -296,7 +296,7 @@ local function ScanProfessionLinks_NonRetail()
 end
 
 local function ScanProfessionLinks()
-	if not GetProfessions() then
+	if not hasAdvancedProfessionInfo then
 		ScanProfessionLinks_NonRetail()
 		return
 	end
