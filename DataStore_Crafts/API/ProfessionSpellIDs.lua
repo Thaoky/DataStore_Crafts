@@ -62,7 +62,11 @@ AddonFactory:OnPlayerLogin(function()
 	
 	for englishName, spellID in pairs(spellIDs) do
 		localizedName = C_Spell.GetSpellName(spellID)
-		localizedSpells[localizedName] = spellID
+		if not localizedName then
+			spellIDs[englishName] = nil	-- Remove this spellID, it doesn't exist in this version
+		else
+			localizedSpells[localizedName] = spellID
+		end
 	end
 	
 	for name, id in pairs(localizedSpells) do
