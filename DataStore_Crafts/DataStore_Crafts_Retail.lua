@@ -620,8 +620,15 @@ local function ScanRecipes_NonRetail()
 					end
 				end
 
-				-- Save the enchant and reagents
-				crafts[i] = format("%s|%s", 1, craftID)  -- Using 1 as a default difficulty (not sure where to get difficulty for enchants)
+				-- Save the enchant and reagents. Using 1 as a default difficulty (not sure where to get difficulty for enchants)
+				-- The craft window knows the icon of every entry, whereas the reader can only guess from the id,
+				-- and guesses wrong for the entries that create an item instead of an enchant.
+				local icon = GetCraftIcon(i)
+
+				crafts[i] = icon
+					and format("%s|%s|%s", 1, craftID, icon)
+					or format("%s|%s", 1, craftID)
+
 				reagentsDB[craftID] = TableConcat(reagentsInfo, "|")
 			end
 		end
