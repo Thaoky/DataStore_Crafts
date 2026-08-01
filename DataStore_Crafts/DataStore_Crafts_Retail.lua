@@ -602,19 +602,28 @@ local function ScanRecipes_NonRetail()
 		for i = 1, GetNumCrafts() do
 			wipe(reagentsInfo)
 			local enchantLink = GetCraftItemLink(i)
-			local enchantID = tonumber(enchantLink:match("enchant:(%d+)"))
 
-			-- Loop through reagents
-			for reagentIndex = 1, GetCraftNumReagents(i) do
-				local _, _, count = GetCraftReagentInfo(i, reagentIndex)
-				local reagentLink = GetCraftReagentItemLink(i, reagentIndex)
-				local reagentItemID = tonumber(reagentLink:match("item:(%d+)"))
-				TableInsert(reagentsInfo, format("%s,%s", reagentItemID, count))
+			-- Most entries are enchants, but a few create an actual item (rods, oils, enchanted leather, ..).
+			-- Those return an item link, so fall back to the item id rather than storing nothing.
+			-- Headers, if the client has any, return no link at all.
+			local craftID = enchantLink and (tonumber(enchantLink:match("enchant:(%d+)")) or tonumber(enchantLink:match("item:(%d+)")))
+
+			if craftID then
+				-- Loop through reagents
+				for reagentIndex = 1, GetCraftNumReagents(i) do
+					local _, _, count = GetCraftReagentInfo(i, reagentIndex)
+					local reagentLink = GetCraftReagentItemLink(i, reagentIndex)
+					local reagentItemID = reagentLink and tonumber(reagentLink:match("item:(%d+)"))
+
+					if reagentItemID and count then
+						TableInsert(reagentsInfo, format("%s,%s", reagentItemID, count))
+					end
+				end
+
+				-- Save the enchant and reagents
+				crafts[i] = format("%s|%s", 1, craftID)  -- Using 1 as a default difficulty (not sure where to get difficulty for enchants)
+				reagentsDB[craftID] = TableConcat(reagentsInfo, "|")
 			end
-
-			-- Save the enchant and reagents
-			crafts[i] = format("%s|%s", 1, enchantID)  -- Using 1 as a default difficulty (not sure where to get difficulty for enchants)
-			reagentsDB[enchantID] = TableConcat(reagentsInfo, "|")
 		end
 	end
 
