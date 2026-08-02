@@ -532,14 +532,15 @@ local function ScanRecipes_NonRetail()
 		end
 		
 		-- Get recipeID
-		
+
+		recipeID = nil		-- reset it, or an entry without a valid link would inherit the previous entry's id
 		recipeLink = GetTradeSkillRecipeLink(i) -- add recipe link here to get recipeID
 		if not recipeLink then
 			recipeLink = GetCraftRecipeLink(i)
 		end
 		if recipeLink then
-			local found, _, enchantString = string.find(recipeLink, "^|%x+|H(.+)|h%[.+%]")
-			recipeID = tonumber(enchantString:match("enchant:(%d+)"))
+			-- an unexpected link format must not throw, or the rest of the list would not be scanned at all
+			recipeID = tonumber(recipeLink:match("|Henchant:(%d+)"))
 			if recipeID then
 				reagentsDB[recipeID] = TableConcat(reagentsInfo, "|")
 			end
