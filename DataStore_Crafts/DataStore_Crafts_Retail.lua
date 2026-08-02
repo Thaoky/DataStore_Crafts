@@ -919,15 +919,26 @@ end
 
 local function _GetNumRecipesByColor(profession)
 	-- counts the number of orange, yellow, green and grey recipes.
-	local counts = { [0] = 0, [1] = 0, [2] = 0, [3] = 0 }
-	
-	_IterateRecipes(profession, 0, 0, function(recipeData) 
+	local counts = { [0] = 0, [1] = 0, [2] = 0, [3] = 0, [4] = 0 }
+
+	-- Non-retail hands the color index straight to the callback, and does not call back for headers.
+	if not isRetail then
+		_IterateRecipes(profession, 0, 0, function(color)
+			if color then
+				counts[color] = (counts[color] or 0) + 1
+			end
+		end)
+
+		return counts[1], counts[2], counts[3], counts[4]		-- orange, yellow, green, grey
+	end
+
+	_IterateRecipes(profession, 0, 0, function(recipeData)
 		if recipeData then
 			local color = _GetRecipeInfo(recipeData)
-			counts[color] = counts[color] + 1
+			counts[color] = (counts[color] or 0) + 1
 		end
 	end)
-	
+
 	return counts[3], counts[2], counts[1], counts[0]		-- orange, yellow, green, grey
 end
 
