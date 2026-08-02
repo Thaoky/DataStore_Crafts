@@ -321,12 +321,16 @@ local function ScanProfessionLinks()
 	AddonFactory:Broadcast("DATASTORE_PROFESSION_LINKS_UPDATED")
 end
 
+local SKILL_GREY = 4
+
 local SkillTypeToColor = {
 	["header"] = 0,
+	["subheader"] = 0,		-- lists are grouped by header, and sometimes by subheader
 	["optimal"] = 1,		-- orange
 	["medium"] = 2,		-- yellow
 	["easy"] = 3,			-- green
 	["trivial"] = 4,		-- grey
+	["nodifficulty"] = 4,	-- white, ie: recipes that never grant a skill up, mostly the epic ones. Grey is the closest match.
 }
 
 local function ScanCooldowns()
@@ -570,30 +574,31 @@ local function ScanRecipes_NonRetail()
 			
 		end
 		-- Scan recipe
-		local color = SkillTypeToColor[skillType]
+		-- An unknown skill type must still be stored: dropping it not only loses the recipe,
+		-- it leaves a hole in the crafts array, and the readers stop at the first hole.
+		local color = SkillTypeToColor[skillType] or SKILL_GREY
 		local craftInfo
 
-		if color then
-			if skillType == "header" then
-				craftInfo = skillName or ""
-				TableInsert(profession.Categories, skillName)
-			else
-				-- cooldowns, if any
-				local cooldown = GetTradeSkillCooldown(i)
-				if cooldown then
-				-- ex: "Hexweave Cloth|86220|1533539676" expire at "now + cooldown"
-					TableInsert(profession.Cooldowns, format("%s|%d|%d", skillName, cooldown, cooldown + time()))
-				end
-
-				-- if there is a valid recipeID, save it
-				if recipeLink then
-					craftInfo = (recipeLink and recipeID) and recipeID or ""
-				else
-					craftInfo = (link and itemID) and itemID or ""
-				end
+		if color == 0 then
+			craftInfo = skillName or ""
+			TableInsert(profession.Categories, skillName)
+		else
+			-- cooldowns, if any
+			local cooldown = GetTradeSkillCooldown(i)
+			if cooldown then
+			-- ex: "Hexweave Cloth|86220|1533539676" expire at "now + cooldown"
+				TableInsert(profession.Cooldowns, format("%s|%d|%d", skillName, cooldown, cooldown + time()))
 			end
-			crafts[i] = format("%s|%s", color, craftInfo)
+
+			-- if there is a valid recipeID, save it
+			if recipeLink then
+				craftInfo = (recipeLink and recipeID) and recipeID or ""
+			else
+				craftInfo = (link and itemID) and itemID or ""
+			end
 		end
+
+		crafts[i] = format("%s|%s", color, craftInfo)
 	end
 
 	-- Old school enchanting
