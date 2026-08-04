@@ -599,6 +599,7 @@ local function ScanRecipes_NonRetail()
 	-- Old school enchanting
 	if CraftIsEnchanting and CraftIsEnchanting() then
 		wipe(profession.Categories) -- No categories in old school enchanting and it can erroneously get it from the tradeskill window
+		wipe(crafts) -- same reason: the craft list owns this table, and it is shorter than a tradeskill list
 		for i = 1, GetNumCrafts() do
 			wipe(reagentsInfo)
 			local enchantLink = GetCraftItemLink(i)
