@@ -621,14 +621,23 @@ local function ScanRecipes_NonRetail()
 					end
 				end
 
-				-- Save the enchant and reagents. Using 1 as a default difficulty (not sure where to get difficulty for enchants)
+				-- Save the enchant and reagents.
+				--
+				-- The difficulty used to be written as a flat 1, so a maxed enchanter was
+				-- reported as "0 green / 0 yellow / 101 orange". The craft window does know it,
+				-- in the third return of GetCraftInfo and in the same words the tradeskill
+				-- window uses, so it goes through the same table as every other profession.
+				-- The old default is kept for anything that table has no entry for.
+				local _, _, craftType = GetCraftInfo(i)
+				local color = SkillTypeToColor[craftType] or 1
+
 				-- The craft window knows the icon of every entry, whereas the reader can only guess from the id,
 				-- and guesses wrong for the entries that create an item instead of an enchant.
 				local icon = GetCraftIcon(i)
 
 				crafts[i] = icon
-					and format("%s|%s|%s", 1, craftID, icon)
-					or format("%s|%s", 1, craftID)
+					and format("%s|%s|%s", color, craftID, icon)
+					or format("%s|%s", color, craftID)
 
 				reagentsDB[craftID] = TableConcat(reagentsInfo, "|")
 			end
