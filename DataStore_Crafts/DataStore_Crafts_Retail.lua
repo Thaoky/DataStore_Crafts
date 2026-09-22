@@ -351,6 +351,8 @@ local function ScanCooldowns()
 end
 
 local function ScanRecipeCategories(profession, professionIndex)
+	-- Fix #89: profession may be nil
+	if not profession then return end
 	-- clear storage
 	profession.CategoryInfo = profession.CategoryInfo or {}
 	wipe(profession.CategoryInfo)
@@ -401,7 +403,17 @@ local function ScanRecipes_Retail()
 
 	local char = thisCharacter
 	local professionIndex = char.Indices[tradeskillName]
+	if not professionIndex then
+		-- Fix #89: professionIndex may be nil after Dragonflight changes, skip scan
+		return
+	end
 	local profession = char.Professions[professionIndex]
+	if not profession then
+		-- Fix #89: profession table may be nil, create it
+		char.Professions[professionIndex] = {}
+		profession = char.Professions[professionIndex]
+		profession.Name = tradeskillName
+	end
 	
 	ScanRecipeCategories(profession, professionIndex)
 	if profession.Cooldowns then
@@ -481,9 +493,17 @@ local function ScanRecipes_NonRetail()
 
 	local char = thisCharacter
 	local professionIndex = char.Indices[tradeskillName]
+	if not professionIndex then
+		-- Fix #89: professionIndex nil
+		return
+	end
 	local profession = char.Professions[professionIndex]
 
-	if not profession then return end
+	if not profession then
+		-- Fix: create if missing
+		char.Professions[professionIndex] = { Name = tradeskillName }
+		profession = char.Professions[professionIndex]
+	end
 
 	if hasAdvancedProfessionInfo then
 		-- Get profession link
