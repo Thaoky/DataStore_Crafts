@@ -5,6 +5,9 @@ local isMists = (LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_MISTS_OF_PANDARIA)
 --local isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 
+local _, _, _, version = GetBuildInfo()
+local isForever = (version > 16000 and version < 20000)
+
 local TableRemove, strsplit, type, tonumber = table.remove, strsplit, type, tonumber
 local resultItemsDB, reagentsDB
 
@@ -113,7 +116,7 @@ AddonFactory:OnAddonLoaded(addonName, function()
 				GetProfession2Rank = function(character) return _GetProfessionRankByIndex(character, professionIndices.Profession2) end,
 				GetCookingRank = function(character) return _GetProfessionRankByIndex(character, professionIndices.Cooking) end,
 				GetFishingRank = function(character) return _GetProfessionRankByIndex(character, professionIndices.Fishing) end,
-				GetFirstAidRank = (not isRetail) and function(character) return _GetProfessionRankByIndex(character, professionIndices.FirstAid) end,
+				GetFirstAidRank = (not isRetail or isForever) and function(character) return _GetProfessionRankByIndex(character, professionIndices.FirstAid) end,
 				--GetArchaeologyRank = (not isClassic) and function(character) return _GetProfessionRankByIndex(character, professionIndices.Archaeology) end,
 				GetArchaeologyRank = (hasArchaeology) and function(character) return _GetProfessionRankByIndex(character, professionIndices.Archaeology) end,
 			},
