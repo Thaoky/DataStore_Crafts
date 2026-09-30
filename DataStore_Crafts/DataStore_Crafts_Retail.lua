@@ -20,6 +20,10 @@ local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 local hasAdvancedProfessionInfo = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 local recipeIsSpell = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_BURNING_CRUSADE)
 
+local _, _, _, version = GetBuildInfo()
+local isForever = (version > 16000 and version < 20000)
+
+
 -- *** Utility functions ***
 local bit64 = LibStub("LibBit64")
 
@@ -201,11 +205,11 @@ local function ScanProfessionInfo(index, mainIndex)
 	if mainIndex == 5 then
 		-- just save the rank for archeology
 		SetProfessionRank(mainIndex, rank, maxRank)
-	elseif not isRetail then
+	elseif not isRetail or isForever then
 		-- save all of them for non-retail
 		SetProfessionRank(mainIndex, rank, maxRank)
 	end
-	
+
 	SetProfessionIndex(name, mainIndex)
 	
 	-- for all other professions, save some info
@@ -296,12 +300,19 @@ local function ScanProfessionLinks_NonRetail()
 end
 
 local function ScanProfessionLinks()
-	if not hasAdvancedProfessionInfo then
+	if not hasAdvancedProfessionInfo and not isForever then
 		ScanProfessionLinks_NonRetail()
 		return
 	end
-	-- firstAid is nil on retail, but valid in cata
-	local prof1, prof2, arch, fish, cook, firstAid = GetProfessions()
+	
+	local prof1, prof2, arch, fish, cook, firstAid
+	
+	if isForever then
+		prof1, prof2, firstAid, fish, cook = GetProfessions()
+	else
+		-- firstAid is nil on retail, but valid in cata
+		prof1, prof2, arch, fish, cook, firstAid = GetProfessions()
+	end
 
 	ScanProfessionInfo(prof1, 1)
 	ScanProfessionInfo(prof2, 2)
@@ -312,7 +323,7 @@ local function ScanProfessionLinks()
 		ScanProfessionInfo(arch, 5)
 	end
 
-	if not isRetail then
+	if not isRetail or isForever then
 		ScanProfessionInfo(firstAid, 6)
 	end
 	
@@ -364,14 +375,17 @@ local function ScanRecipeCategories(profession, professionIndex)
 	for _, id in ipairs( { C_TradeSkillUI.GetCategories() } ) do
 		local info = C_TradeSkillUI.GetCategoryInfo(id)
 		
-		cumulatedRank = cumulatedRank + (info.skillLineCurrentLevel or 0)
-		cumulatedMaxRank = cumulatedMaxRank + (info.skillLineMaxLevel or 0)
+		local skillLineCurrentLevel = info.skillLineCurrentLevel or 0
+		local skillLineMaxLevel = info.skillLineMaxLevel or 0
+		
+		cumulatedRank = cumulatedRank + skillLineCurrentLevel
+		cumulatedMaxRank = cumulatedMaxRank + skillLineMaxLevel
 		recipeCategoriesDB[info.categoryID] = info.name
 	
 		-- Save the ranks of the current category
-		local attributes = info.skillLineCurrentLevel			-- bits 0-9 rank
-				+ bit64:LeftShift(info.skillLineMaxLevel, 10)	-- bits 10-19 = max rank
-				+ bit64:LeftShift(info.categoryID, 20)				-- bits 20 = categoryID
+		local attributes = skillLineCurrentLevel			-- bits 0-9 rank
+				+ bit64:LeftShift(skillLineMaxLevel, 10)	-- bits 10-19 = max rank
+				+ bit64:LeftShift(info.categoryID, 20)		-- bits 20 = categoryID
 	
 		TableInsert(profession.CategoryInfo, attributes)
 		
