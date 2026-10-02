@@ -1,12 +1,12 @@
 local addonName, addon = ...
 
-local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
-local isMists = (LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_MISTS_OF_PANDARIA)
+local isRetail = AddonFactory.isRetail
+local isForever = AddonFactory.isForever
+local isMainline = AddonFactory.isMainline
+local isMists = AddonFactory.isMists
 --local isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 
-local _, _, _, version = GetBuildInfo()
-local isForever = (version > 16000 and version < 20000)
 
 local TableRemove, strsplit, type, tonumber = table.remove, strsplit, type, tonumber
 local resultItemsDB, reagentsDB
@@ -150,6 +150,6 @@ AddonFactory:OnAddonLoaded(addonName, function()
 			profession.Cooldowns = nil
 		end
 	end)
-	DataStore:RegisterMethod(addon, "GetCraftResultItem", isRetail and _GetCraftResultItem_Retail or _GetCraftResultItem_NonRetail)
-	DataStore:RegisterMethod(addon, "GetCraftReagents", not isRetail and _GetCraftReagents)
+	DataStore:RegisterMethod(addon, "GetCraftResultItem", isMainline and _GetCraftResultItem_Retail or _GetCraftResultItem_NonRetail)
+	DataStore:RegisterMethod(addon, "GetCraftReagents", not isMainline and _GetCraftReagents)
 end)
