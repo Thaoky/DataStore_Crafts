@@ -21,7 +21,7 @@ local GetTradeSkillNumReagents, GetTradeSkillReagentInfo, GetTradeSkillReagentIt
 local GetCraftDisplaySkillLine, GetCraftInfo, GetCraftNumReagents, GetCraftReagentInfo, GetCraftReagentItemLink = GetCraftDisplaySkillLine, GetCraftInfo, GetCraftNumReagents, GetCraftReagentInfo, GetCraftReagentItemLink
 local C_TradeSkillUI, C_Timer = C_TradeSkillUI, C_Timer
 
-local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
+local isCata = AddonFactory.isCata
 
 
 local AddonDB_Defaults = {

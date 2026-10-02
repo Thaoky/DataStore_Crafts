@@ -13,15 +13,14 @@ local DataStore, TableConcat, TableInsert, format, gsub, type = DataStore, table
 local GetProfessions, GetProfessionInfo = GetProfessions, GetProfessionInfo
 local C_TradeSkillUI, C_Spell = C_TradeSkillUI, C_Spell
 
-local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
-local isCata = (WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC)
+local isRetail = AddonFactory.isRetail
+local isForever = AddonFactory.isForever
+local isMainline = AddonFactory.isMainline
+local isCata = AddonFactory.isCata
 local API_GetSpellName = GetSpellInfo or C_Spell.GetSpellName
 local hasArchaeology = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 local hasAdvancedProfessionInfo = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_CATACLYSM)
 local recipeIsSpell = (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_BURNING_CRUSADE)
-
-local _, _, _, version = GetBuildInfo()
-local isForever = (version > 16000 and version < 20000)
 
 
 -- *** Utility functions ***
@@ -636,7 +635,7 @@ local function ScanRecipes_NonRetail()
 end
 
 local function ScanTradeSkills()
-	if isRetail then
+	if isMainline then
 		ScanRecipes_Retail()
 	else
 		SaveActiveFilters()
@@ -683,7 +682,7 @@ end
 
 local function OnTradeSkillShow()
 	-- Retail only
-	if isRetail then
+	if isMainline then
 		if C_TradeSkillUI.IsTradeSkillLinked() or C_TradeSkillUI.IsTradeSkillGuild() or C_TradeSkillUI.IsNPCCrafting() then return end
 		
 		hooksecurefunc(C_TradeSkillUI, "CraftRecipe", function(recipeID)
@@ -695,7 +694,7 @@ local function OnTradeSkillShow()
 	isTradeSkillWindowOpen = true
 	
 	-- Non-retail only
-	if not isRetail then
+	if not isMainline then
 		addon:ListenTo("TRADE_SKILL_UPDATE", OnTradeSkillUpdate)
 		ScanProfessionLinks()
 
@@ -733,7 +732,7 @@ local function OnChatMsgSkill(self, message)
 	local skill = message:match(skillUpMsg)
 	if not skill then return end
 	
-	if isRetail then
+	if isMainline then
 		local info = C_TradeSkillUI.GetChildProfessionInfo()
 		-- if we gained a skill point in the currently opened profession pane, rescan
 		if skill == info.professionName then	
@@ -796,7 +795,7 @@ local function _GetNumRecipeCategories(profession)
 end
 
 local function _GetRecipeCategoryInfo(profession, index)
-	if not isRetail then
+	if not isMainline then
 		return profession.Categories[index]
 	end
 
@@ -869,7 +868,7 @@ local function _IterateRecipes(profession, mainCategory, subCategory, callback)
 		callback = subCategory
 		subCategory = 0
 	end
-	if not isRetail then
+	if not isMainline then
 		local crafts = profession.Crafts
 		if not crafts then return end			-- can be nil for gathering professions
 
@@ -979,12 +978,12 @@ AddonFactory:OnAddonLoaded(addonName, function()
 		},
 		characterTables = {
 			["DataStore_Crafts_Characters"] = {
-				GetRecipeInfo_NonRetail = isRetail and nil or _GetRecipeInfo_NonRetail			-- character based in cata, not in retail
+				GetRecipeInfo_NonRetail = isMainline and nil or _GetRecipeInfo_NonRetail			-- character based in cata, not in retail
 			},
 		}
 	})
 	
-	if isRetail then
+	if isMainline then
 		DataStore:RegisterMethod(addon, "IsCraftKnown", _IsCraftKnown)
 		DataStore:RegisterMethod(addon, "GetRecipeInfo", _GetRecipeInfo)
 	else
@@ -1005,7 +1004,7 @@ AddonFactory:OnAddonLoaded(addonName, function()
 	thisCharacter.Professions = thisCharacter.Professions or {}
 	recipeCategoriesDB = DataStore_Crafts_RecipeCategories
 	
-	if not isRetail then
+	if not isMainline then
 		DataStore:RegisterTables({
 			addon = addon,
 			rawTables = {

@@ -1,8 +1,8 @@
 local addonName, addon = ...
 
 local L = AddonFactory:GetLocale(addonName)
-local isVanilla = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
-local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+local isRetail = AddonFactory.isRetail
+local isClassic = AddonFactory.isClassic
 
 local SPELL_ID_ALCHEMY = 2259
 local SPELL_ID_BLACKSMITHING = 3100
@@ -18,8 +18,8 @@ local SPELL_ID_COOKING = 2550
 
 local SPELL_ID_FISHING = isRetail and 131474 or 7732			-- do not use 7733, it's "Artisan Fishing", not "Fishing"
 local SPELL_ID_FIRSTAID = isRetail and nil or 3273
-local SPELL_ID_INSCRIPTION = isVanilla and nil or 45357
-local SPELL_ID_JEWELCRAFTING = isVanilla and nil or 25229
+local SPELL_ID_INSCRIPTION = isClassic and nil or 45357
+local SPELL_ID_JEWELCRAFTING = isClassic and nil or 25229
 
 local spellIDs = {
 	-- GetSpellInfo with this value will return localized spell name
