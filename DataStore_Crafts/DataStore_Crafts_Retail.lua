@@ -416,6 +416,9 @@ local function ScanRecipes_Retail()
 	local professionIndex = char.Indices[tradeskillName]
 	local profession = char.Professions[professionIndex]
 	
+	-- class skills like Poisons open the profession window but are not in GetProfessions(), so they have no index
+	if not profession then return end
+	
 	ScanRecipeCategories(profession, professionIndex)
 	if profession.Cooldowns then
 		wipe(profession.Cooldowns)
