@@ -414,6 +414,14 @@ local function ScanRecipes_Retail()
 
 	local char = thisCharacter
 	local professionIndex = char.Indices[tradeskillName]
+	
+	-- Indices are only refreshed at login & on skill ups, a profession learned since then is unknown => rescan
+	if not professionIndex then
+		ScanProfessionLinks()
+		professionIndex = char.Indices[tradeskillName]
+		if not professionIndex then return end
+	end	
+	
 	local profession = char.Professions[professionIndex]
 	
 	ScanRecipeCategories(profession, professionIndex)
