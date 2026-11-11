@@ -399,7 +399,9 @@ local function ScanRecipeCategories(profession, professionIndex)
 		
 	end
 	
-	SetProfessionRank(professionIndex, cumulatedRank, cumulatedMaxRank)
+	if cumulatedMaxRank > 0 then
+		SetProfessionRank(professionIndex, cumulatedRank, cumulatedMaxRank)
+	end
 end
 
 local function ScanRecipes_Retail()
