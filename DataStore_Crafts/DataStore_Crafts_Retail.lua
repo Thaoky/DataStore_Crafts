@@ -399,7 +399,11 @@ local function ScanRecipeCategories(profession, professionIndex)
 		
 	end
 	
-	SetProfessionRank(professionIndex, cumulatedRank, cumulatedMaxRank)
+	-- Forever's categories carry no skill line levels, so this would save a rank of 0.
+	-- The rank saved by ScanProfessionInfo (GetProfessionInfo) is correct there, keep it.
+	if not isForever then
+		SetProfessionRank(professionIndex, cumulatedRank, cumulatedMaxRank)
+	end
 end
 
 local function ScanRecipes_Retail()
